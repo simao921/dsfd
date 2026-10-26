@@ -50,7 +50,7 @@ function Brand({ light = false }: { light?: boolean }) {
   return (
     <Link to="/" className={`brand ${light ? 'brand-light' : ''}`} aria-label="Obragoito — início">
       <span className="brand-symbol" aria-hidden="true"><i /><i /><i /></span>
-      <span className="brand-word">OBRAGOITO<span className="brand-dot">.</span></span>
+      <span className="brand-lockup"><span className="brand-word">OBRAGOITO<span className="brand-dot">.</span></span><span className="brand-tagline">CONSTRUÇÕES E OBRAS PÚBLICAS</span></span>
     </Link>
   );
 }
@@ -177,7 +177,7 @@ function HomePage() {
     <main>
       <section className="hero" ref={heroRef}>
         <motion.div className="hero-image-wrap" style={{ y: imageY }}>
-          <img src="/images/parque-infantil-freeport.jpg" alt="Parque Infantil Freeport, obra do portefólio Obragoito" fetchPriority="high" />
+          <img src="/images/praca-nuno-goncalves.jpg" alt="Praça Nuno Gonçalves, obra do portefólio Obragoito" fetchPriority="high" />
         </motion.div>
         <div className="hero-overlay" />
         <div className="hero-grid" aria-hidden="true" />
@@ -194,7 +194,7 @@ function HomePage() {
           </motion.div>
         </div>
         <div className="hero-index"><span>01</span><i /><small>OBRA FEITA</small></div>
-        <div className="hero-caption"><span>PORTFÓLIO</span><span>PARQUE INFANTIL FREEPORT</span></div>
+        <div className="hero-caption"><span>PORTFÓLIO</span><span>PRAÇA NUNO GONÇALVES</span></div>
         <motion.div className="hero-stamp" animate={reduceMotion ? undefined : { rotate: 360 }} transition={{ duration: 38, repeat: Infinity, ease: 'linear' }} aria-label="35 anos de experiência">
           <svg viewBox="0 0 130 130" aria-hidden="true"><defs><path id="stamp-circle" d="M65,65 m-48,0 a48,48 0 1,1 96,0 a48,48 0 1,1 -96,0" /></defs><text><textPath href="#stamp-circle">OBRA FEITA COM RIGOR · DESDE 1991 · </textPath></text></svg>
           <span>35<small>+</small></span>
