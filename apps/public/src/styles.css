@@ -79,6 +79,14 @@ img { display: block; max-width: 100%; }
 .hero-stamp > span small { font-size: 20px; vertical-align: top; }
 .hero-scroll { position: absolute; right: 40px; bottom: 33px; display: flex; align-items: center; gap: 12px; color: rgba(255,255,255,.8); font-size: 9px; letter-spacing: .09em; }
 .scroll-line { width: 50px; height: 1px; background: var(--orange); }
+.trust-bar { display: grid; grid-template-columns: repeat(3, 1fr); gap: 30px; padding-top: 27px; padding-bottom: 27px; background: var(--white); border-bottom: 1px solid var(--rule); }
+.trust-bar > div { display: flex; align-items: center; gap: 16px; min-height: 47px; }
+.trust-bar > div + div { border-left: 1px solid var(--rule); padding-left: 30px; }
+.trust-number { color: var(--orange); font: 800 29px/.9 var(--sans); letter-spacing: -.08em; }
+.trust-mark { width: 34px; height: 34px; display: grid; place-items: center; border: 1px solid var(--orange); border-radius: 50%; color: var(--orange); }
+.trust-bar strong, .trust-bar small { display: block; }
+.trust-bar strong { font: 700 11px var(--sans); letter-spacing: -.01em; }
+.trust-bar small { margin-top: 5px; color: var(--muted); font-size: 10px; }
 
 .service-ticker { overflow: hidden; background: var(--orange); color: #fff; padding: 17px 0; }
 .ticker-track { display: flex; width: max-content; animation: ticker 30s linear infinite; }
@@ -173,6 +181,9 @@ img { display: block; max-width: 100%; }
 .footer-nav-block a, .footer-nav-block > span:last-child { display: inline-flex; align-items: center; gap: 6px; color: rgba(255,255,255,.77); font-size: 11px; line-height: 1.7; transition: color .2s ease; }
 .footer-nav-block a:hover { color: #fff; }
 .footer-bottom { padding-top: 18px; border-top: 1px solid rgba(255,255,255,.18); display: flex; align-items: center; justify-content: space-between; color: rgba(255,255,255,.43); font-size: 9px; }
+.footer-bottom-links { display: inline-flex; align-items: center; gap: 22px; }
+.footer-bottom button { padding: 0; border: 0; background: none; color: rgba(255,255,255,.62); font: inherit; text-decoration: underline; text-underline-offset: 3px; }
+.footer-bottom button:hover { color: #fff; }
 
 .inner-page { min-height: 60vh; padding-top: 88px; }
 .page-hero { min-height: 450px; padding-top: 108px; padding-bottom: 70px; background: #e8e7df; }
@@ -204,6 +215,37 @@ img { display: block; max-width: 100%; }
 .modal-copy h2 { margin: 19px 0 13px; font: 600 32px/1.1 var(--sans); letter-spacing: -.05em; }
 .modal-copy p { color: var(--muted); font-size: 12px; line-height: 1.8; margin-bottom: 25px; }
 .modal-close { position: absolute; top: 13px; right: 13px; z-index: 2; display: grid; place-items: center; width: 38px; height: 38px; border: 0; background: var(--ink); color: #fff; }
+.cookie-banner { position: fixed; z-index: 120; right: 22px; bottom: 22px; width: min(660px, calc(100% - 44px)); display: flex; align-items: center; gap: 26px; padding: 20px 21px; background: var(--ink); color: #fff; box-shadow: 0 18px 55px rgba(0,0,0,.24); }
+.cookie-banner-copy { flex: 1; }
+.cookie-heading { display: flex; align-items: center; gap: 9px; color: #fff; font: 700 12px var(--sans); }
+.cookie-heading svg { color: var(--orange); }
+.cookie-banner p, .cookie-modal p { margin: 9px 0 0; color: rgba(255,255,255,.68); font-size: 11px; line-height: 1.6; }
+.cookie-actions, .cookie-modal-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.cookie-button { min-height: 36px; padding: 0 13px; border: 1px solid rgba(255,255,255,.3); font: 700 10px var(--sans); white-space: nowrap; }
+.cookie-button-quiet { background: transparent; color: #fff; }
+.cookie-button-quiet:hover { border-color: #fff; }
+.cookie-button-primary { border-color: var(--orange); background: var(--orange); color: #fff; }
+.cookie-button-primary:hover { background: #d94f1e; border-color: #d94f1e; }
+.cookie-modal-backdrop { position: fixed; z-index: 130; inset: 0; display: grid; place-items: center; padding: 22px; background: rgba(11,12,10,.78); backdrop-filter: blur(7px); }
+.cookie-modal { position: relative; width: min(640px, 100%); max-height: 90vh; overflow: auto; padding: 42px; background: var(--paper); color: var(--ink); box-shadow: 0 25px 80px rgba(0,0,0,.3); }
+.cookie-modal .modal-close { background: transparent; color: var(--ink); }
+.cookie-modal h2 { margin: 17px 0 0; font: 600 clamp(34px, 5vw, 55px)/1 var(--sans); letter-spacing: -.07em; }
+.cookie-modal-intro { max-width: 520px; margin: 18px 0 27px !important; color: var(--muted) !important; font-size: 13px !important; }
+.cookie-option { display: flex; align-items: center; justify-content: space-between; gap: 20px; padding: 18px 0; border-top: 1px solid var(--rule); }
+.cookie-option strong { font: 700 12px var(--sans); }
+.cookie-option p { max-width: 430px; margin-top: 6px; color: var(--muted) !important; }
+.cookie-status { color: var(--orange); font: 700 9px var(--sans); white-space: nowrap; }
+.cookie-option-toggle { cursor: pointer; }
+.cookie-option-toggle input { width: 20px; height: 20px; accent-color: var(--orange); }
+.cookie-modal-actions { justify-content: flex-end; padding-top: 20px; }
+.cookie-modal-actions .cookie-button-quiet { color: var(--ink); border-color: var(--rule); }
+.cookie-modal-actions .cookie-button-quiet:hover { border-color: var(--ink); }
+.cookie-legal { margin-top: 24px; padding-top: 20px; border-top: 1px solid var(--rule); }
+.cookie-legal strong { display: block; margin-top: 14px; font: 700 11px var(--sans); }
+.cookie-legal strong:first-child { margin-top: 0; }
+.cookie-legal p { color: var(--muted) !important; }
+.cookie-legal a { color: var(--orange); text-decoration: underline; text-underline-offset: 2px; }
+.policy-modal { max-width: 700px; }
 
 .service-detail-list { padding-top: 70px; padding-bottom: 90px; display: grid; grid-template-columns: repeat(2,1fr); gap: 0 40px; }
 .service-detail { min-height: 240px; padding: 27px 0; border-bottom: 1px solid var(--rule); }
@@ -298,6 +340,9 @@ img { display: block; max-width: 100%; }
   .hero-stamp text { font-size: 8.5px; letter-spacing: 1px; }
   .hero-scroll { right: 22px; bottom: 20px; gap: 8px; font-size: 8px; }
   .scroll-line { width: 27px; }
+  .trust-bar { grid-template-columns: 1fr; gap: 0; padding-top: 8px; padding-bottom: 8px; }
+  .trust-bar > div { padding: 15px 0; }
+  .trust-bar > div + div { border-top: 1px solid var(--rule); border-left: 0; padding-left: 0; }
   .ticker-set span { gap: 19px; padding: 0 18px; font-size: 8px; }
   .service-ticker { padding: 14px 0; }
   .section-pad { padding-left: 23px; padding-right: 23px; }
@@ -341,6 +386,14 @@ img { display: block; max-width: 100%; }
   .footer-top { grid-template-columns: 1fr 1fr; gap: 36px 24px; padding-bottom: 45px; }
   .footer-brand-block { grid-column: 1/-1; }
   .footer-bottom { align-items: flex-start; gap: 12px; flex-direction: column; line-height: 1.5; }
+  .footer-bottom-links { align-items: flex-start; gap: 9px; flex-direction: column; }
+  .cookie-banner { right: 12px; bottom: 12px; width: calc(100% - 24px); display: block; padding: 18px; }
+  .cookie-actions { margin-top: 16px; justify-content: flex-end; }
+  .cookie-button { flex: 1; }
+  .cookie-modal { padding: 34px 23px 25px; }
+  .cookie-modal-actions { flex-direction: column-reverse; }
+  .cookie-modal-actions .cookie-button { width: 100%; }
+  .cookie-option { align-items: flex-start; }
   .inner-page { padding-top: 72px; }
   .page-hero { min-height: 390px; padding-top: 86px; padding-bottom: 55px; }
   .page-hero h1 { margin-top: 23px; font-size: clamp(52px,14vw,79px); }

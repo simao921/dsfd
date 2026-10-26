@@ -81,7 +81,68 @@ function Header() {
   );
 }
 
+type ConsentChoice = 'accepted' | 'essential';
+
+function CookieConsent() {
+  const [choice, setChoice] = useState<ConsentChoice | null>(null);
+  const [preferencesOpen, setPreferencesOpen] = useState(false);
+  const [analyticsEnabled, setAnalyticsEnabled] = useState(false);
+
+  useEffect(() => {
+    const stored = window.localStorage.getItem('obragoito-cookie-consent');
+    if (stored === 'accepted' || stored === 'essential') setChoice(stored);
+  }, []);
+
+  const saveChoice = (nextChoice: ConsentChoice) => {
+    window.localStorage.setItem('obragoito-cookie-consent', nextChoice);
+    setChoice(nextChoice);
+    setPreferencesOpen(false);
+  };
+
+  return (
+    <>
+      {choice === null && !preferencesOpen && (
+        <aside className="cookie-banner" role="dialog" aria-label="Preferências de cookies">
+          <div className="cookie-banner-copy">
+            <div className="cookie-heading"><ShieldCheck size={18} /> Privacidade e cookies</div>
+            <p>Usamos apenas cookies essenciais para o funcionamento do site. Pode aceitar cookies opcionais ou continuar apenas com os necessários.</p>
+          </div>
+          <div className="cookie-actions">
+            <button type="button" className="cookie-button cookie-button-quiet" onClick={() => setPreferencesOpen(true)}>Preferências</button>
+            <button type="button" className="cookie-button cookie-button-quiet" onClick={() => saveChoice('essential')}>Só necessários</button>
+            <button type="button" className="cookie-button cookie-button-primary" onClick={() => saveChoice('accepted')}>Aceitar tudo</button>
+          </div>
+        </aside>
+      )}
+      {preferencesOpen && (
+        <div className="cookie-modal-backdrop" role="presentation">
+          <section className="cookie-modal" role="dialog" aria-modal="true" aria-labelledby="cookie-modal-title">
+            <button type="button" className="modal-close" onClick={() => setPreferencesOpen(false)} aria-label="Fechar preferências"><X size={20} /></button>
+            <span className="eyebrow">Controlo de privacidade</span>
+            <h2 id="cookie-modal-title">As suas escolhas.</h2>
+            <p className="cookie-modal-intro">Escolha que tipos de armazenamento autoriza neste dispositivo. Pode alterar esta decisão a qualquer momento através do rodapé.</p>
+            <div className="cookie-option">
+              <div><strong>Cookies essenciais</strong><p>Necessários para guardar esta preferência e garantir o funcionamento básico do site.</p></div>
+              <span className="cookie-status">Sempre ativos</span>
+            </div>
+            <label className="cookie-option cookie-option-toggle">
+              <div><strong>Cookies opcionais</strong><p>Atualmente não utilizamos cookies de publicidade ou análise de terceiros.</p></div>
+              <input type="checkbox" checked={analyticsEnabled} onChange={(event) => setAnalyticsEnabled(event.target.checked)} />
+            </label>
+            <div className="cookie-modal-actions">
+              <button type="button" className="cookie-button cookie-button-quiet" onClick={() => saveChoice('essential')}>Só necessários</button>
+              <button type="button" className="cookie-button cookie-button-primary" onClick={() => saveChoice(analyticsEnabled ? 'accepted' : 'essential')}>Guardar preferências</button>
+            </div>
+            <div className="cookie-legal"><strong>Política de privacidade</strong><p>Os contactos recebidos por email ou telefone são tratados apenas para responder a pedidos e gerir a relação comercial. Não vendemos dados pessoais. Para exercer os seus direitos, contacte <a href="mailto:obragoito@obragoito.pt">obragoito@obragoito.pt</a>.</p><strong>Política de cookies</strong><p>Este site utiliza armazenamento local apenas para memorizar a sua escolha de consentimento. Não são instalados cookies de marketing por defeito.</p></div>
+          </section>
+        </div>
+      )}
+    </>
+  );
+}
+
 function Footer() {
+  const [policiesOpen, setPoliciesOpen] = useState(false);
   return (
     <footer className="site-footer">
       <div className="footer-top">
@@ -93,7 +154,8 @@ function Footer() {
         <div className="footer-nav-block"><span className="eyebrow">Contactos</span><a href="tel:+351219605500">21 960 5500</a><a href="mailto:obragoito@obragoito.pt">obragoito@obragoito.pt</a><span>Quinta do Almargem<br />2705-570 São João das Lampas</span></div>
         <div className="footer-nav-block"><span className="eyebrow">Redes sociais</span><a href="https://www.facebook.com/share/1E2jEP8KoM/" target="_blank" rel="noreferrer">Facebook <ArrowUpRight size={13} /></a><a href="https://www.instagram.com/obragoito?dlrf=N29mdG4wZ2N1cnNt" target="_blank" rel="noreferrer">Instagram <ArrowUpRight size={13} /></a></div>
       </div>
-      <div className="footer-bottom"><span>© {new Date().getFullYear()} Obragoito — Construções e Obras Públicas, Lda.</span><span>Feito com rigor, como a obra.</span></div>
+      <div className="footer-bottom"><span>© {new Date().getFullYear()} Obragoito — Construções e Obras Públicas, Lda.</span><span className="footer-bottom-links"><button type="button" onClick={() => setPoliciesOpen(true)}>Privacidade e cookies</button><span>Feito com rigor, como a obra.</span></span></div>
+      {policiesOpen && <div className="cookie-modal-backdrop" role="presentation"><section className="cookie-modal policy-modal" role="dialog" aria-modal="true" aria-labelledby="policy-modal-title"><button type="button" className="modal-close" onClick={() => setPoliciesOpen(false)} aria-label="Fechar políticas"><X size={20} /></button><span className="eyebrow">Informação legal</span><h2 id="policy-modal-title">Privacidade sem letras pequenas.</h2><p className="cookie-modal-intro">A Obragoito respeita a sua privacidade e trata os dados de forma responsável e transparente.</p><div className="cookie-legal"><strong>Dados de contacto</strong><p>Quando nos contacta, usamos o seu nome, email ou telefone apenas para responder ao pedido, preparar propostas e acompanhar uma relação profissional. Conservamos os dados pelo tempo necessário a estas finalidades ou enquanto existir uma obrigação legal.</p><strong>Os seus direitos</strong><p>Pode pedir acesso, correção ou eliminação dos seus dados através de <a href="mailto:obragoito@obragoito.pt">obragoito@obragoito.pt</a>. Também pode apresentar reclamação à Comissão Nacional de Proteção de Dados.</p><strong>Cookies</strong><p>O site usa armazenamento local para guardar a preferência de consentimento. Não usamos cookies de marketing nem partilhamos dados pessoais com redes de publicidade.</p></div></section></div>}
     </footer>
   );
 }
@@ -138,6 +200,11 @@ function HomePage() {
           <span>35<small>+</small></span>
         </motion.div>
         <Link className="hero-scroll" to="/projetos"><span>Deslize para explorar</span><span className="scroll-line" /></Link>
+      </section>
+      <section className="trust-bar section-pad" aria-label="Compromissos Obragoito">
+        <div><span className="trust-number">35+</span><span><strong>Anos de experiência</strong><small>Construção em Portugal desde 1991</small></span></div>
+        <div><span className="trust-number">250</span><span><strong>Obras realizadas</strong><small>Projetos públicos e privados</small></span></div>
+        <div><span className="trust-mark"><Check size={18} /></span><span><strong>Rigor em cada detalhe</strong><small>Do planeamento à entrega</small></span></div>
       </section>
 
       <div className="service-ticker" aria-label="Áreas de atuação"><div className="ticker-track">{[0, 1].map((loop) => <div className="ticker-set" key={loop} aria-hidden={loop === 1}>{services.map((service) => <span key={`${loop}-${service.number}`}>{service.title}<i /></span>)}</div>)}</div></div>
@@ -227,5 +294,5 @@ function NotFound() {
 export default function PublicSite() {
   const location = useLocation();
   useEffect(() => { window.scrollTo({ top: 0, behavior: 'instant' as ScrollBehavior }); }, [location.pathname]);
-  return <div className="public-site"><Header /><AnimatePresence mode="wait"><Routes location={location} key={location.pathname}><Route path="/" element={<HomePage />} /><Route path="/home" element={<HomePage />} /><Route path="/servicos" element={<ServicesPage />} /><Route path="/projetos" element={<ProjectsPage />} /><Route path="/sobre" element={<AboutPage />} /><Route path="/contactos" element={<ContactPage />} /><Route path="*" element={<NotFound />} /></Routes></AnimatePresence><Footer /></div>;
+  return <div className="public-site"><Header /><AnimatePresence mode="wait"><Routes location={location} key={location.pathname}><Route path="/" element={<HomePage />} /><Route path="/home" element={<HomePage />} /><Route path="/servicos" element={<ServicesPage />} /><Route path="/projetos" element={<ProjectsPage />} /><Route path="/sobre" element={<AboutPage />} /><Route path="/contactos" element={<ContactPage />} /><Route path="*" element={<NotFound />} /></Routes></AnimatePresence><Footer /><CookieConsent /></div>;
 }
