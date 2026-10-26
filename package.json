@@ -1,0 +1,53 @@
+{
+  "name": "obragoito-platform",
+  "version": "1.0.0",
+  "private": true,
+  "packageManager": "pnpm@11.25.0",
+  "scripts": {
+    "dev": "concurrently -k -n api,public,admin,clients,workers -c blue,green,magenta,cyan,yellow \"pnpm dev:api\" \"pnpm dev:public\" \"pnpm dev:admin\" \"pnpm dev:clients\" \"pnpm dev:workers\"",
+    "dev:api": "tsx watch server/index.ts",
+    "dev:public": "SITE=public vite --config vite.config.ts --host 0.0.0.0 --port 3000 --strictPort",
+    "dev:admin": "SITE=admin vite --config vite.config.ts --host 0.0.0.0 --port 3001 --strictPort",
+    "dev:clients": "SITE=clients vite --config vite.config.ts --host 0.0.0.0 --port 3002 --strictPort",
+    "dev:workers": "SITE=workers vite --config vite.config.ts --host 0.0.0.0 --port 3003 --strictPort",
+    "build": "pnpm build:public && pnpm build:admin && pnpm build:clients && pnpm build:workers && pnpm typecheck",
+    "build:public": "SITE=public vite build --config vite.config.ts",
+    "build:admin": "SITE=admin vite build --config vite.config.ts",
+    "build:clients": "SITE=clients vite build --config vite.config.ts",
+    "build:workers": "SITE=workers vite build --config vite.config.ts",
+    "start": "NODE_ENV=production tsx server/index.ts",
+    "typecheck": "tsc --noEmit -p tsconfig.json"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.58.0",
+    "concurrently": "^9.2.0",
+    "cookie-parser": "^1.4.7",
+    "cors": "^2.8.5",
+    "dotenv": "^18.0.9",
+    "exceljs": "^4.4.0",
+    "express": "^5.1.0",
+    "framer-motion": "^12.23.12",
+    "helmet": "^8.1.0",
+    "lucide-react": "^0.468.0",
+    "multer": "^2.5.0",
+    "papaparse": "^5.5.3",
+    "react": "^19.1.1",
+    "react-dom": "^19.1.1",
+    "react-router-dom": "^7.8.2",
+    "zod": "^4.1.5"
+  },
+  "devDependencies": {
+    "@types/cookie-parser": "^1.4.9",
+    "@types/cors": "^2.8.19",
+    "@types/express": "^5.0.3",
+    "@types/multer": "^2.3.0",
+    "@types/node": "^22.17.2",
+    "@types/papaparse": "^5.3.16",
+    "@types/react": "^19.1.11",
+    "@types/react-dom": "^19.1.7",
+    "@vitejs/plugin-react": "^5.0.2",
+    "tsx": "^4.20.5",
+    "typescript": "^5.9.2",
+    "vite": "^7.1.3"
+  }
+}
