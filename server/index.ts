@@ -9,7 +9,7 @@ import helmet from 'helmet';
 import multer from 'multer';
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 import { z } from 'zod';
-import { transcribeAndTranslate, VoiceProcessingError } from './speech';
+import { transcribeAndTranslate, VoiceProcessingError } from './speech.ts';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
