@@ -68,7 +68,11 @@ function createAnonClient(accessToken?: string) {
 }
 
 function isTrustedOrigin(origin: string) {
-  const extras = (process.env.ALLOWED_ORIGINS ?? '').split(',').map((value) => value.trim()).filter(Boolean);
+  const extras = [
+    'https://gestaoobragoito.vercel.app',
+    'https://obragoito.pt',
+    ...(process.env.ALLOWED_ORIGINS ?? '').split(',').map((value) => value.trim()).filter(Boolean),
+  ];
   if (extras.includes(origin)) return true;
   let url: URL;
   try { url = new URL(origin); } catch { return false; }
