@@ -59,8 +59,9 @@ function Header() {
   const [open, setOpen] = useState(false);
   const location = useLocation();
   useEffect(() => setOpen(false), [location.pathname]);
+  const isHome = location.pathname === '/' || location.pathname === '/home';
   return (
-    <header className={`site-header ${open ? 'nav-open' : ''}`}>
+    <header className={`site-header ${isHome ? 'site-header-home' : 'site-header-inner'} ${open ? 'nav-open' : ''}`}>
       <div className="header-inner">
         <Brand />
         <nav className="desktop-nav" aria-label="Navegação principal">
