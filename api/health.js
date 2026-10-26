@@ -1,6 +1,4 @@
-type ApiResponse = { status: (code: number) => ApiResponse; json: (body: unknown) => void };
-
-export default function health(_request: unknown, response: ApiResponse) {
+export default function health(_request, response) {
   response.status(200).json({
     status: 'ok',
     supabaseConfigured: Boolean(
