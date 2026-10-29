@@ -9,7 +9,6 @@ import helmet from 'helmet';
 import multer from 'multer';
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 import { z } from 'zod';
-import { transcribeAndTranslate, VoiceProcessingError } from './speech.ts';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
@@ -311,29 +310,9 @@ const upload = multer({
     callback(null, true);
   },
 });
-const audioUpload = multer({
-  storage: multer.memoryStorage(),
-  limits: { fileSize: MAX_UPLOAD_BYTES, files: 1 },
-  fileFilter(_req, file, callback) {
-    const mimeType = file.mimetype.toLowerCase().split(';')[0];
-    const extension = path.extname(file.originalname).toLowerCase();
-    const allowedMimeTypes = new Set(['audio/webm', 'audio/ogg', 'audio/mp4', 'audio/mpeg', 'audio/wav', 'audio/x-wav', 'audio/flac', 'audio/aac']);
-    const allowedExtensions = new Set(['.webm', '.ogg', '.mp4', '.m4a', '.mp3', '.wav', '.flac', '.aac']);
-    if (!allowedMimeTypes.has(mimeType) || !allowedExtensions.has(extension)) { callback(new HttpError(415, 'Formato de áudio não suportado. Grave novamente no browser ou escreva a mensagem.')); return; }
-    callback(null, true);
-  },
-});
-
 app.get('/api/health', (_req, res) => res.json({ status: 'ok', supabaseConfigured: hasSupabaseConfig() }));
 app.get('/api/cron/daily-worker-report-utc0', dailyWorkerReportJob(0));
 app.get('/api/cron/daily-worker-report-utc1', dailyWorkerReportJob(60));
-
-app.post('/api/speech/transcribe', requireAuth(['admin', 'worker']), audioUpload.single('file'), asyncRoute(async (req, res) => {
-  if (!req.file) throw new HttpError(400, 'Não foi recebido áudio. Grave novamente.');
-  const audioType = req.file.mimetype.toLowerCase().split(';')[0];
-  const result = await transcribeAndTranslate(req.file.buffer, safeFileName(req.file.originalname), audioType);
-  res.json(result);
-}));
 
 app.post('/api/auth/login', asyncRoute(async (req, res) => {
   const input = identifierSchema.safeParse(req.body);
@@ -805,9 +784,9 @@ app.use((error: unknown, _req: Request, res: Response, _next: NextFunction) => {
     res.status(error.code === 'LIMIT_FILE_SIZE' ? 413 : 400).json({ error: error.code === 'LIMIT_FILE_SIZE' ? `O ficheiro ultrapassa o limite de ${limitMb} MB.` : 'Não foi possível processar o ficheiro.' });
     return;
   }
-  const status = error instanceof HttpError || error instanceof VoiceProcessingError ? error.status : 500;
-  const message = error instanceof HttpError || error instanceof VoiceProcessingError ? error.message : 'Ocorreu um erro inesperado. Tente novamente.';
-  if (!(error instanceof HttpError) && !(error instanceof VoiceProcessingError)) console.error('[api] unexpected_error');
+  const status = error instanceof HttpError ? error.status : 500;
+  const message = error instanceof HttpError ? error.message : 'Ocorreu um erro inesperado. Tente novamente.';
+  if (!(error instanceof HttpError)) console.error('[api] unexpected_error');
   res.status(status).json({ error: message });
 });
 

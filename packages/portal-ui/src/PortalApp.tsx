@@ -26,6 +26,19 @@ type DailyWorkerEntry = { worker_id: string; full_name: string; assigned_project
 type DailyWorkerReport = { report_date: string; entries: DailyWorkerEntry[]; generated_at: string; timezone: string };
 type WorkerCredential = { full_name: string; username: string; password: string; title: string };
 type WorkerImportRow = { full_name: string; title?: string };
+type BrowserSpeechRecognition = {
+  lang: string;
+  continuous: boolean;
+  interimResults: boolean;
+  maxAlternatives: number;
+  start: () => void;
+  stop: () => void;
+  abort: () => void;
+  onresult: ((event: { results: ArrayLike<ArrayLike<{ transcript: string; isFinal?: boolean }>> }) => void) | null;
+  onerror: ((event: { error: string }) => void) | null;
+  onend: (() => void) | null;
+};
+type BrowserSpeechRecognitionConstructor = new () => BrowserSpeechRecognition;
 
 const kindConfig: Record<PortalKind, { title: string; wordmark: string; subtitle: string; expectedRole: PortalRole; loginTitle: string; loginDescription: string; loginLabel: string; accent: string }> = {
   admin: { title: 'Gestão Obragoito', wordmark: 'GESTÃO', subtitle: 'Área de administração', expectedRole: 'admin', loginTitle: 'Gestão com rigor.', loginDescription: 'Entre para gerir obras, clientes e equipa.', loginLabel: 'Email de administrador', accent: 'Administração' },
@@ -200,72 +213,56 @@ function DataState({ loading, error, empty, children }: { loading: boolean; erro
 function VoiceTextarea({ label, value, onChange, placeholder, rows = 4, required = false }: { label: string; value: string; onChange: (value: string) => void; placeholder: string; rows?: number; required?: boolean }) {
   const [enabled, setEnabled] = useState(true);
   const [recording, setRecording] = useState(false);
-  const [transcribing, setTranscribing] = useState(false);
   const [notice, setNotice] = useState('');
   const [error, setError] = useState('');
-  const [detectedLanguage, setDetectedLanguage] = useState<string | null>(null);
-  const recorderRef = useRef<MediaRecorder | null>(null);
-  const streamRef = useRef<MediaStream | null>(null);
+  const [language, setLanguage] = useState(() => navigator.language || 'pt-PT');
+  const recognitionRef = useRef<BrowserSpeechRecognition | null>(null);
 
   useEffect(() => () => {
-    if (recorderRef.current?.state === 'recording') recorderRef.current.stop();
-    streamRef.current?.getTracks().forEach((track) => track.stop());
+    recognitionRef.current?.abort();
   }, []);
 
-  const startRecording = async () => {
-    setError(''); setNotice(''); setDetectedLanguage(null);
-    if (!navigator.mediaDevices?.getUserMedia || typeof MediaRecorder === 'undefined') {
-      setError('Este browser não permite gravação. Use um browser atualizado ou escreva a mensagem.'); return;
+  const startRecording = () => {
+    setError(''); setNotice('');
+    const browser = window as typeof window & { SpeechRecognition?: BrowserSpeechRecognitionConstructor; webkitSpeechRecognition?: BrowserSpeechRecognitionConstructor };
+    const SpeechRecognition = browser.SpeechRecognition ?? browser.webkitSpeechRecognition;
+    if (!SpeechRecognition) {
+      setError('Este browser não disponibiliza ditado. Use Chrome ou Edge, ou escreva a mensagem.'); return;
     }
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true } });
-      streamRef.current = stream;
-      const candidates = ['audio/webm;codecs=opus', 'audio/webm', 'audio/mp4'];
-      const mimeType = candidates.find((candidate) => MediaRecorder.isTypeSupported(candidate));
-      const recorder = new MediaRecorder(stream, { ...(mimeType ? { mimeType } : {}), audioBitsPerSecond: 48_000 });
-      recorderRef.current = recorder;
-      const chunks: BlobPart[] = [];
-      recorder.addEventListener('dataavailable', (event) => { if (event.data.size) chunks.push(event.data); });
-      recorder.addEventListener('stop', () => {
-        stream.getTracks().forEach((track) => track.stop());
-        streamRef.current = null; recorderRef.current = null; setRecording(false);
-        const contentType = recorder.mimeType || 'audio/webm';
-        const extension = contentType.includes('mp4') ? 'm4a' : contentType.includes('ogg') ? 'ogg' : contentType.includes('mpeg') ? 'mp3' : contentType.includes('wav') ? 'wav' : 'webm';
-        const audio = new Blob(chunks, { type: contentType });
-        if (!audio.size) { setError('Não foi captada fala. Tente novamente ou escreva.'); return; }
-        if (audio.size > UPLOAD_LIMIT_MB * 1024 * 1024) { setError(`O áudio excede ${UPLOAD_LIMIT_MB} MB. Grave uma mensagem mais curta ou escreva.`); return; }
-        setTranscribing(true); setNotice('A identificar o idioma, transcrever e traduzir para Português (Portugal)…');
-        const form = new FormData(); form.set('file', audio, `mensagem.${extension}`);
-        void api<{ text: string; detectedLanguage: string | null; targetLanguage: 'pt-PT' }>('/speech/transcribe', { method: 'POST', body: form })
-          .then((result) => {
-            const text = result.text.trim();
-            if (!text) throw new Error('Não foi obtido texto. Tente novamente ou escreva.');
-            onChange(value.trim() ? `${value.trimEnd()} ${text}` : text);
-            setDetectedLanguage(result.detectedLanguage);
-            setNotice(`Transcrição traduzida para Português (Portugal)${result.detectedLanguage ? ` · idioma detetado: ${result.detectedLanguage}` : ''}. Reveja e edite antes de enviar.`);
-          })
-          .catch((problem: unknown) => { setNotice(''); setError(problem instanceof Error ? problem.message : 'Falhou a transcrição. Escreva a mensagem manualmente.'); })
-          .finally(() => setTranscribing(false));
-      });
-      recorder.start(); setRecording(true); setNotice('A gravar. Prima “Parar” quando terminar de falar.');
-    } catch (problem) {
-      streamRef.current?.getTracks().forEach((track) => track.stop()); streamRef.current = null;
-      const denied = problem instanceof DOMException && (problem.name === 'NotAllowedError' || problem.name === 'PermissionDeniedError');
-      setError(denied ? 'O acesso ao microfone foi recusado. Autorize-o nas definições do browser ou escreva a mensagem.' : 'Não foi possível abrir o microfone. Verifique as permissões ou escreva a mensagem.');
-    }
+    const recognition = new SpeechRecognition();
+    recognition.lang = language;
+    recognition.continuous = true;
+    recognition.interimResults = false;
+    recognition.maxAlternatives = 1;
+    recognition.onresult = (event) => {
+      const text = Array.from(event.results).map((result) => result[0]?.transcript ?? '').join(' ').trim();
+      if (text) onChange(value.trim() ? `${value.trimEnd()} ${text}` : text);
+    };
+    recognition.onerror = (event) => {
+      const messages: Record<string, string> = {
+        'not-allowed': 'O acesso ao microfone foi recusado. Autorize-o nas definições do browser.',
+        'no-speech': 'Não foi captada fala. Tente novamente ou escreva.',
+        'network': 'O reconhecimento de voz do browser não está disponível neste momento.',
+      };
+      setError(messages[event.error] ?? 'Não foi possível reconhecer a fala. Tente novamente ou escreva.');
+    };
+    recognition.onend = () => { setRecording(false); recognitionRef.current = null; };
+    recognitionRef.current = recognition;
+    recognition.start();
+    setRecording(true); setNotice(`A ouvir em ${language}. Prima “Parar” quando terminar.`);
   };
 
-  const stopRecording = () => { if (recorderRef.current?.state === 'recording') recorderRef.current.stop(); };
+  const stopRecording = () => { recognitionRef.current?.stop(); };
   return <div className="voice-textarea-field">
     <label className="voice-textarea-label">{label}<textarea value={value} onChange={(event) => onChange(event.target.value)} placeholder={placeholder} rows={rows} required={required} /></label>
     <div className="voice-entry-controls">
       <label className="voice-entry-toggle"><input type="checkbox" checked={enabled} onChange={(event) => { const next = event.target.checked; setEnabled(next); if (!next) stopRecording(); }} /><span>{enabled ? 'Ditado ativo' : 'Ditado desligado'}</span></label>
-      <button type="button" className={`voice-record-button ${recording ? 'is-recording' : ''}`} disabled={!enabled || transcribing} onClick={recording ? stopRecording : startRecording} aria-label={recording ? 'Parar gravação' : 'Gravar e transcrever'}>
-        {recording ? <Square size={14} fill="currentColor" /> : enabled ? <Mic size={15} /> : <MicOff size={15} />}{recording ? 'Parar gravação' : transcribing ? 'A processar…' : enabled ? 'Falar' : 'Ditado desligado'}
+      <label className="voice-language-select">Idioma do ditado<select value={language} onChange={(event) => setLanguage(event.target.value)} disabled={recording}><option value="pt-PT">Português</option><option value="en-GB">Inglês</option><option value="es-ES">Espanhol</option><option value="fr-FR">Francês</option><option value="ro-RO">Romeno</option><option value="uk-UA">Ucraniano</option></select></label>
+      <button type="button" className={`voice-record-button ${recording ? 'is-recording' : ''}`} disabled={!enabled} onClick={recording ? stopRecording : startRecording} aria-label={recording ? 'Parar ditado' : 'Iniciar ditado'}>
+        {recording ? <Square size={14} fill="currentColor" /> : enabled ? <Mic size={15} /> : <MicOff size={15} />}{recording ? 'Parar' : enabled ? 'Falar' : 'Ditado desligado'}
       </button>
     </div>
-    <p className="voice-processing-note" aria-live="polite">{notice || 'A língua é detetada automaticamente e o resultado é traduzido para português. O áudio não fica guardado; só o texto enviado é conservado.'}</p>
-    {detectedLanguage && <span className="voice-language-chip">Idioma de origem detetado: {detectedLanguage} → Português (Portugal)</span>}
+    <p className="voice-processing-note" aria-live="polite">{notice || 'O ditado é feito pelo browser. O áudio não é enviado nem guardado pela Obragoito; reveja o texto antes de enviar.'}</p>
     {error && <div className="inline-notice error-notice" role="alert">{error}</div>}
   </div>;
 }

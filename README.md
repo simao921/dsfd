@@ -43,15 +43,15 @@ No desenvolvimento local, deixa `VITE_API_ORIGIN` vazio para usar o proxy Vite e
 
 ## Publicar na Vercel
 
-Os sites têm configurações próprias em `apps/public/vercel.json`, `apps/admin/vercel.json`, `apps/clients/vercel.json` e `apps/workers/vercel.json`. A API Express é servida pela aplicação exportada em `index.ts`; a Vercel deteta o Express no projeto raiz e encaminha os pedidos para as rotas `/api/*` do servidor. Cria **cinco projetos Vercel separados a partir do mesmo repositório**: quatro estáticos e um para a API. Nos quatro sites, define o Root Directory respetivo (`apps/public`, `apps/admin`, `apps/clients` ou `apps/workers`) e ativa a inclusão dos ficheiros partilhados fora dessa pasta, para que o build possa ler `packages/` e a configuração pnpm da raiz. A pasta de saída de cada site é `dist`.
+Os sites têm configurações próprias em `apps/public/vercel.json`, `apps/admin/vercel.json`, `apps/clients/vercel.json` e `apps/workers/vercel.json`. A API Express é servida por `api/[...path].ts`, uma função Vercel explícita para todas as rotas `/api/*`. Cria **cinco projetos Vercel separados a partir do mesmo repositório**: quatro estáticos e um para a API. Nos quatro sites, define o Root Directory respetivo (`apps/public`, `apps/admin`, `apps/clients` ou `apps/workers`) e ativa a inclusão dos ficheiros partilhados fora dessa pasta, para que o build possa ler `packages/` e a configuração pnpm da raiz. A pasta de saída de cada site é `dist`.
 
-Para a API, usa a raiz do repositório como Root Directory e mantém a deteção automática da framework Express ativa. Associa os domínios `obragoito.pt`, `gestao.obragoito.pt`, `clientes.obragoito.pt`, `equipa.obragoito.pt` e `api.obragoito.pt` aos projetos correspondentes e aponta o DNS no Vercel. Define `VITE_API_ORIGIN=https://api.obragoito.pt` nas variáveis de build dos quatro sites.
+Para a API, usa a raiz do repositório como Root Directory. Associa os domínios `obragoito.pt`, `gestao.obragoito.pt`, `clientes.obragoito.pt`, `equipa.obragoito.pt` e `api.obragoito.pt` aos projetos correspondentes e aponta o DNS no Vercel. Define `VITE_API_ORIGIN=https://api.obragoito.pt` nas variáveis de build dos quatro sites.
 
-No projeto da API Vercel, adiciona como variáveis **server-side** `SUPABASE_URL`, `SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, `SPEECH_API_URL`, `SPEECH_API_KEY`, `SPEECH_MODEL`, `LLM_API_URL`, `LLM_API_KEY`, `LLM_MODEL` e `CRON_SECRET`. Define `COOKIE_SECURE=true`. Gera `CRON_SECRET` como uma string aleatória com pelo menos 16 caracteres; a Vercel envia-a no cabeçalho das chamadas Cron. Não uses o prefixo `VITE_` em chaves privadas. Para previews `*.vercel.app`, acrescenta as origens permitidas à variável `ALLOWED_ORIGINS` da API.
+No projeto da API Vercel, adiciona como variáveis **server-side** `SUPABASE_URL`, `SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY` e `CRON_SECRET`. Define `COOKIE_SECURE=true`. Gera `CRON_SECRET` como uma string aleatória com pelo menos 16 caracteres; a Vercel envia-a no cabeçalho das chamadas Cron. Não uses o prefixo `VITE_` em chaves privadas. Para previews `*.vercel.app`, acrescenta as origens permitidas à variável `ALLOWED_ORIGINS` da API.
 
 Os dois Cron Jobs da API representam 23:59 UTC no inverno e 22:59 UTC no horário de verão. A função só cria o fecho quando a hora local é 23 em `Europe/Lisbon`, cobrindo a mudança de hora. No plano Pro a Vercel executa na precisão do minuto; no Hobby a execução pode ocorrer em qualquer minuto da hora 23, por isso o fecho é aproximado e não garantido exatamente às 23:59. Os jobs Cron executam apenas no deploy de produção.
 
-A Vercel limita o corpo de pedidos às Functions a 4,5 MB; os builds Vercel deste projeto limitam áudio e documentos a 4 MB para deixar margem ao multipart. Em localhost, o limite é 15 MB. O áudio é enviado apenas para transcrição e não é guardado.
+A Vercel limita o corpo de pedidos às Functions a 4,5 MB; os builds Vercel deste projeto limitam documentos a 4 MB para deixar margem ao multipart. Em localhost, o limite é 15 MB. O ditado é tratado pelo browser, sem enviar áudio ao servidor da Obragoito.
 
 Os passos acima preparam o repositório, mas não fazem deploy nem alteram DNS. Confirma as definições de cada projeto e variáveis no Dashboard Vercel antes de publicar. Referências: [Monorepos Vercel](https://vercel.com/docs/monorepos), [Express na Vercel](https://vercel.com/docs/frameworks/backend/express), [vercel.json](https://vercel.com/docs/project-configuration/vercel-json) e [limites das Functions](https://vercel.com/docs/functions/limitations).
 
@@ -59,8 +59,6 @@ Os passos acima preparam o repositório, mas não fazem deploy nem alteram DNS. 
 
 - `SUPABASE_URL`, `SUPABASE_ANON_KEY` e `SUPABASE_SERVICE_ROLE_KEY`: ligação ao projeto Supabase único; service role apenas no servidor.
 - `VITE_API_ORIGIN`: vazio em localhost; origem pública da API, por exemplo `https://api.obragoito.pt`, nos builds dos sites Vercel.
-- `SPEECH_API_URL`, `SPEECH_API_KEY` e `SPEECH_MODEL`: endpoint compatível com transcrição, que deteta o idioma falado automaticamente.
-- `LLM_API_URL`, `LLM_API_KEY` e `LLM_MODEL`: endpoint compatível com chat para traduzir a transcrição para Português europeu. Nenhuma chave de IA é distribuída no ZIP.
 - `CRON_SECRET`: segredo server-side usado para proteger o fecho diário dos trabalhadores.
 - `VITE_UPLOAD_LIMIT_MB`: 15 em localhost; os comandos de build Vercel definem 4.
 
