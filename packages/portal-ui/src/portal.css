@@ -18,3 +18,90 @@
 /* Ditado de voz acessível e composição de conversas internas */
 .voice-textarea-field{display:flex;flex-direction:column;gap:8px;min-width:0}.voice-textarea-label{display:flex;flex-direction:column;gap:8px;color:#51534c;font:700 10px Manrope,sans-serif;letter-spacing:.02em}.voice-textarea-label textarea{width:100%;min-height:78px;padding:11px 12px;border:1px solid rgba(32,33,30,.17);border-radius:0;outline:0;background:rgba(255,255,255,.68);color:var(--portal-ink);font:500 12px/1.6 'DM Sans',sans-serif;resize:vertical;transition:border-color .2s,box-shadow .2s}.voice-textarea-label textarea:focus{border-color:var(--portal-orange);box-shadow:0 0 0 3px rgba(236,98,45,.1)}.voice-textarea-label textarea::placeholder{color:#a2a39d}.voice-entry-controls{display:flex;align-items:center;gap:11px;flex-wrap:wrap}.voice-entry-toggle{display:inline-flex;align-items:center;gap:7px;color:#686a63;font:600 9px Manrope,sans-serif;cursor:pointer}.voice-entry-toggle input{accent-color:var(--portal-orange)}.voice-record-button{min-height:34px;padding:0 11px;display:inline-flex;align-items:center;gap:7px;border:1px solid rgba(32,33,30,.18);background:#fff;color:#50524c;font:700 8px Manrope,sans-serif;transition:background .2s,border-color .2s,color .2s}.voice-record-button:hover:not(:disabled){border-color:var(--portal-orange);color:var(--portal-orange)}.voice-record-button.is-recording{border-color:#b9482a;background:#fff0eb;color:#a73d20}.voice-processing-note{margin:0;color:#85877f;font-size:8px;line-height:1.65}.voice-language-chip{align-self:flex-start;padding:5px 8px;background:#eef4ed;color:#4f7559;font:700 7px Manrope,sans-serif;letter-spacing:.02em}.voice-textarea-field .inline-notice{margin-top:0}.admin-message-compose{margin-bottom:17px}.message-target-grid{display:grid;grid-template-columns:1fr 1fr;gap:13px}.message-target-grid label{display:flex;flex-direction:column;gap:7px;color:#51534c;font:700 10px Manrope,sans-serif}.message-target-grid select{min-height:44px;padding:0 11px;border:1px solid rgba(32,33,30,.17);background:rgba(255,255,255,.68);color:var(--portal-ink);font:500 11px 'DM Sans',sans-serif}.message-target-grid select:focus{outline:2px solid rgba(236,98,45,.25);border-color:var(--portal-orange)}.message-from-admin .internal-message-icon{background:#eaf0e8;color:#587a5f}
 @media(max-width:760px){.message-target-grid{grid-template-columns:1fr;gap:10px}.voice-entry-controls{gap:8px}.voice-record-button{min-height:37px}.admin-message-compose{margin-bottom:10px}}
+
+/* Refined portal system: clearer type, calmer surfaces and stronger focus states. */
+:root{
+  --portal-muted:#666a61;
+  --portal-line:rgba(32,33,30,.11);
+  --portal-paper:#f6f5f1;
+}
+body{font-size:14px}
+::selection{background:rgba(236,98,45,.2);color:var(--portal-ink)}
+.portal-app-shell{background:radial-gradient(ellipse at 88% 4%,rgba(255,255,255,.92),transparent 36%),var(--portal-paper)}
+.portal-sidebar{background:linear-gradient(165deg,#20231e 0%,#171915 72%);box-shadow:8px 0 30px rgba(25,27,22,.07)}
+.portal-nav{gap:6px;margin-top:2px}
+.portal-nav-link{min-height:46px;border-radius:8px;padding:0 12px;font-size:12px}
+.portal-nav-link.is-active{background:rgba(236,98,45,.17)}
+.portal-nav-link.is-active .nav-active-mark{top:9px;bottom:9px;width:3px;border-radius:4px}
+.sidebar-caption{font-size:10px}
+.sidebar-help{border-radius:10px;background:rgba(255,255,255,.035)}
+.sidebar-help strong{font-size:11px}
+.sidebar-help small{font-size:10px}
+.portal-topbar{height:76px;background:rgba(255,255,255,.74);backdrop-filter:blur(14px)}
+.topbar-title{font-size:11px}
+.secure-label{font-size:9px;letter-spacing:.08em}
+.profile-avatar{width:38px;height:38px;background:#eee9df;color:#4e5149;font-size:12px}
+.profile-text strong{font-size:11px}
+.profile-text small{font-size:10px}
+.portal-content{padding-top:52px}
+.portal-page-heading{margin-bottom:35px}
+.portal-eyebrow,.panel-kicker{font-size:10px;letter-spacing:.12em}
+.portal-page-heading h1{margin-top:15px;font-size:clamp(36px,4vw,52px);letter-spacing:-.06em}
+.portal-page-heading p{font-size:14px;line-height:1.7}
+.summary-grid{gap:16px;margin-bottom:22px}
+.summary-card{min-height:174px;padding:21px;border-radius:14px;background:rgba(255,255,255,.84);box-shadow:0 5px 20px rgba(35,35,29,.035);transition:transform .2s ease,box-shadow .2s ease,border-color .2s ease}
+.summary-card:hover{transform:translateY(-3px);border-color:rgba(236,98,45,.28);box-shadow:0 12px 30px rgba(35,35,29,.08)}
+.summary-card-icon{width:40px;height:40px;margin-bottom:17px;border-radius:11px;background:#f8e9e1}
+.summary-card-label{font-size:12px}
+.summary-card>strong{font-size:36px}
+.summary-card>small{right:18px;bottom:20px;font-size:10px}
+.panel-card{padding:24px;border-radius:14px;background:rgba(255,255,255,.9);box-shadow:0 5px 22px rgba(35,35,29,.035)}
+.panel-heading{margin-bottom:20px}
+.panel-heading h2{font-size:19px}
+.panel-card>p,.panel-card .publish-guide p,.document-guide p{font-size:13px;line-height:1.75}
+.quick-actions a{min-height:40px;padding:0 14px;border-radius:8px;background:#fff;font-size:11px;transition:all .18s ease}
+.quick-actions a:hover{background:#fff8f4;transform:translateY(-1px)}
+.button-primary,.button-secondary{min-height:46px;padding:0 18px;border-radius:8px;font-size:12px}
+.button-primary{box-shadow:0 5px 12px rgba(213,82,34,.13)}
+.button-primary:hover:not(:disabled){box-shadow:0 8px 18px rgba(213,82,34,.2)}
+.button-secondary{background:rgba(255,255,255,.72)}
+.login-panel{background:linear-gradient(145deg,#faf9f6,#f0efe9)}
+.login-panel-top{min-height:42px}
+.login-site-label{font-size:10px}
+.login-form-wrap{width:min(100%,450px)}
+.login-kicker{font-size:11px}
+.login-form-wrap h1{font-size:clamp(42px,5vw,62px)}
+.login-description{font-size:15px;line-height:1.7}
+.login-form{gap:21px}
+.login-form label,.stack-form label,.compact-form label{font-size:12px}
+.login-form input,.stack-form input,.stack-form textarea,.stack-form select,.compact-form input,.communication-form select,.communication-form textarea,.publish-update-form input,.publish-update-form textarea{min-height:50px;border-radius:8px;background:rgba(255,255,255,.9);font-size:14px}
+.login-submit{min-height:52px}
+.login-assist{font-size:12px}
+.login-panel-footer{font-size:10px}
+.portal-alert{padding:14px;border-radius:9px;font-size:12px}
+.data-table th{font-size:10px}
+.data-table td{font-size:12px}
+.state-pill,.project-status{font-size:9px}
+.summary-card-label,.portal-nav-link,.quick-actions a,.secure-label{font-family:Manrope,'DM Sans',sans-serif}
+@media(max-width:1050px){
+  .portal-content{padding-top:38px}
+  .summary-card{min-height:164px}
+}
+@media(max-width:760px){
+  .portal-topbar{height:64px}
+  .secure-label{font-size:8px}
+  .portal-content{padding-top:30px}
+  .portal-page-heading h1{font-size:36px}
+  .portal-page-heading p{font-size:13px}
+  .summary-grid{gap:10px}
+  .summary-card{min-height:143px;padding:14px;border-radius:12px}
+  .summary-card-icon{width:34px;height:34px;margin-bottom:12px;border-radius:9px}
+  .summary-card-label{font-size:10px}
+  .summary-card>strong{font-size:30px}
+  .summary-card>small{right:12px;bottom:14px;font-size:9px}
+  .panel-card{padding:17px;border-radius:12px}
+  .panel-heading h2{font-size:16px}
+  .quick-actions a{min-height:38px;font-size:10px}
+  .login-description{font-size:14px}
+  .login-form label{font-size:12px}
+}
