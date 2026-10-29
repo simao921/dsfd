@@ -458,3 +458,29 @@ img { display: block; max-width: 100%; }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
 }
+
+/* Shared finish across the public portfolio: clearer focus and smoother surfaces. */
+:focus-visible { outline: 3px solid #f49a73; outline-offset: 4px; }
+.site-header-inner { background: rgba(246,245,241,.92); backdrop-filter: blur(14px); }
+.header-cta, .hero-cta, .cookie-button { border-radius: 7px; }
+.header-cta:focus-visible, .hero-cta:focus-visible, .arrow-link:focus-visible { outline-color: #fff; }
+.trust-bar { box-shadow: 0 12px 35px rgba(25,26,23,.035); }
+.trust-bar strong { font-size: 12px; }
+.trust-bar small { font-size: 11px; }
+.project-image, .portfolio-image, .quote-image { border-radius: 12px; }
+.project-open, .portfolio-open { right: 14px; bottom: 14px; border-radius: 8px; }
+.project-card, .portfolio-card { border-radius: 12px; }
+.project-meta h3, .portfolio-meta strong { transition: color .2s ease; }
+.project-card:hover .project-meta h3, .portfolio-card:hover .portfolio-meta strong { color: var(--orange); }
+.service-row { border-radius: 8px; }
+.service-row:hover { padding-right: 13px; }
+.service-arrow { background: rgba(255,255,255,.4); }
+.contact-card { border-radius: 12px; background: rgba(255,255,255,.28); }
+.contact-card-primary { background: var(--orange); }
+.cookie-banner, .cookie-modal { border-radius: 12px; }
+.cookie-button { min-height: 40px; }
+@media (max-width: 760px) {
+  .site-header-inner { background: rgba(246,245,241,.96); }
+  .project-image, .portfolio-image, .quote-image { border-radius: 9px; }
+  .cookie-banner { border-radius: 11px; }
+}

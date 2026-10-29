@@ -17,7 +17,7 @@ function providerConfig(kind: ProviderKind): ProviderConfig {
   const prefix = kind === 'speech' ? 'SPEECH' : 'LLM';
   const baseUrl = (process.env[`${prefix}_API_URL`] || '').trim().replace(/\/+$/, '');
   const key = (process.env[`${prefix}_API_KEY`] || '').trim();
-  const model = process.env[`${prefix}_MODEL`]?.trim() || (kind === 'speech' ? 'whisper-1' : undefined);
+  const model = process.env[`${prefix}_MODEL`]?.trim() || (kind === 'speech' ? 'gpt-transcribe' : undefined);
   if (!baseUrl || !key) {
     throw new VoiceProcessingError(503, 'O serviço de voz não está configurado neste servidor. A escrita manual continua disponível.');
   }
@@ -93,8 +93,9 @@ export async function transcribeAndTranslate(audio: Buffer, fileName: string, mi
   if (!audio.length) throw new VoiceProcessingError(400, 'Não foi recebido áudio. Grave novamente.');
   const speech = providerConfig('speech');
   const form = new FormData();
-  form.set('model', speech.model ?? 'whisper-1');
-  form.set('response_format', 'verbose_json');
+  const speechModel = speech.model ?? 'gpt-transcribe';
+  form.set('model', speechModel);
+  if (speechModel === 'whisper-1') form.set('response_format', 'verbose_json');
   form.set('prompt', 'Transcreve fielmente o discurso na língua original que detetares automaticamente; não traduzas nesta etapa. O contexto é construção civil e obras públicas. Preserva nomes, números, datas e termos técnicos.');
   form.set('file', new Blob([new Uint8Array(audio)], { type: mimeType }), fileName);
 
@@ -103,7 +104,11 @@ export async function transcribeAndTranslate(audio: Buffer, fileName: string, mi
   const transcript = typeof speechPayload.text === 'string' ? speechPayload.text.trim() : '';
   if (!transcript) throw new VoiceProcessingError(422, 'Não foi detetada fala nítida. Tente aproximar-se do microfone ou escreva a mensagem.');
   if (transcript.length > MAX_TRANSCRIPT_CHARACTERS) throw new VoiceProcessingError(413, 'O áudio gerou texto demasiado longo. Divida a mensagem em partes mais curtas.');
-  const detectedLanguage = typeof speechPayload.language === 'string' ? speechPayload.language.trim() : '';
+  const detectedLanguage = typeof speechPayload.language === 'string'
+    ? speechPayload.language.trim()
+    : Array.isArray(speechPayload.languages)
+      ? speechPayload.languages.map((entry) => entry && typeof entry === 'object' && typeof (entry as Record<string, unknown>).code === 'string' ? (entry as Record<string, string>).code.trim() : '').filter(Boolean).join(', ')
+      : '';
 
   const translation = providerConfig('translation');
   const body: Record<string, unknown> = {

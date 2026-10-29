@@ -13,7 +13,7 @@ Projeto React com quatro sites independentes: site público, administração, cl
 
 2. Preenche `.env` com `SUPABASE_URL`, `SUPABASE_ANON_KEY` e `SUPABASE_SERVICE_ROLE_KEY`. A chave `SUPABASE_SERVICE_ROLE_KEY` deve permanecer apenas no servidor e no teu computador; nunca a coloques no browser nem num repositório público.
 
-3. No SQL Editor do teu projeto Supabase, executa **uma única vez** o ficheiro `supabase/migrations/20261026174500_secure_project_portal.sql`. Esta migração cria o esquema, permissões RLS e o bucket privado. O SQL não cria utilizadores de autenticação.
+3. No SQL Editor do teu projeto Supabase, executa primeiro `supabase/migrations/20261026174500_secure_project_portal.sql` e depois `supabase/migrations/20261029142831_add_daily_worker_activity_reports.sql`. A primeira migração cria o esquema, permissões RLS e o bucket privado. A segunda guarda o estado declarado nos relatórios e os fechos diários. O SQL não cria utilizadores de autenticação.
 
    A sintaxe foi validada localmente, mas a migração não foi executada nem comparada com o estado remoto do teu projeto. Antes de executar, confirma que não existem tabelas, tipos, funções ou políticas com os mesmos nomes. A migração é transacional: conflitos provocam rollback; não contém `DROP`, `TRUNCATE` nem eliminação de dados.
 
@@ -47,7 +47,9 @@ Os sites têm configurações próprias em `apps/public/vercel.json`, `apps/admi
 
 Para a API, usa a raiz do repositório como Root Directory e mantém a deteção automática da framework Express ativa. Associa os domínios `obragoito.pt`, `gestao.obragoito.pt`, `clientes.obragoito.pt`, `equipa.obragoito.pt` e `api.obragoito.pt` aos projetos correspondentes e aponta o DNS no Vercel. Define `VITE_API_ORIGIN=https://api.obragoito.pt` nas variáveis de build dos quatro sites.
 
-No projeto da API Vercel, adiciona como variáveis **server-side** `SUPABASE_URL`, `SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, `SPEECH_API_URL`, `SPEECH_API_KEY`, `SPEECH_MODEL`, `LLM_API_URL`, `LLM_API_KEY` e, se necessário, `LLM_MODEL`. Define `COOKIE_SECURE=true`. Não uses o prefixo `VITE_` em chaves privadas. Para previews `*.vercel.app`, acrescenta as origens permitidas à variável `ALLOWED_ORIGINS` da API.
+No projeto da API Vercel, adiciona como variáveis **server-side** `SUPABASE_URL`, `SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, `SPEECH_API_URL`, `SPEECH_API_KEY`, `SPEECH_MODEL`, `LLM_API_URL`, `LLM_API_KEY`, `LLM_MODEL` e `CRON_SECRET`. Define `COOKIE_SECURE=true`. Gera `CRON_SECRET` como uma string aleatória com pelo menos 16 caracteres; a Vercel envia-a no cabeçalho das chamadas Cron. Não uses o prefixo `VITE_` em chaves privadas. Para previews `*.vercel.app`, acrescenta as origens permitidas à variável `ALLOWED_ORIGINS` da API.
+
+Os dois Cron Jobs da API representam 23:59 UTC no inverno e 22:59 UTC no horário de verão. A função só cria o fecho quando a hora local é 23 em `Europe/Lisbon`, cobrindo a mudança de hora. No plano Pro a Vercel executa na precisão do minuto; no Hobby a execução pode ocorrer em qualquer minuto da hora 23, por isso o fecho é aproximado e não garantido exatamente às 23:59. Os jobs Cron executam apenas no deploy de produção.
 
 A Vercel limita o corpo de pedidos às Functions a 4,5 MB; os builds Vercel deste projeto limitam áudio e documentos a 4 MB para deixar margem ao multipart. Em localhost, o limite é 15 MB. O áudio é enviado apenas para transcrição e não é guardado.
 
@@ -59,6 +61,7 @@ Os passos acima preparam o repositório, mas não fazem deploy nem alteram DNS. 
 - `VITE_API_ORIGIN`: vazio em localhost; origem pública da API, por exemplo `https://api.obragoito.pt`, nos builds dos sites Vercel.
 - `SPEECH_API_URL`, `SPEECH_API_KEY` e `SPEECH_MODEL`: endpoint compatível com transcrição, que deteta o idioma falado automaticamente.
 - `LLM_API_URL`, `LLM_API_KEY` e `LLM_MODEL`: endpoint compatível com chat para traduzir a transcrição para Português europeu. Nenhuma chave de IA é distribuída no ZIP.
+- `CRON_SECRET`: segredo server-side usado para proteger o fecho diário dos trabalhadores.
 - `VITE_UPLOAD_LIMIT_MB`: 15 em localhost; os comandos de build Vercel definem 4.
 
 ```bash

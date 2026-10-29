@@ -105,3 +105,33 @@ body{font-size:14px}
   .login-description{font-size:14px}
   .login-form label{font-size:12px}
 }
+.daily-report-panel{margin-bottom:16px}
+.daily-report-meta{display:flex;align-items:flex-end;justify-content:space-between;gap:14px;margin:0 0 15px;padding:13px 15px;border-radius:9px;background:#f5f4ef}
+.daily-report-meta strong{font:700 13px Manrope,sans-serif}
+.daily-report-meta span{color:var(--portal-muted);font-size:11px}
+.daily-worker-list{display:flex;flex-direction:column;gap:9px}
+.daily-worker-entry{padding:15px 16px;border:1px solid var(--portal-line);border-radius:10px;background:rgba(255,255,255,.72)}
+.daily-worker-heading{display:flex;align-items:center;justify-content:space-between;gap:15px}
+.daily-worker-heading>div{display:flex;flex-direction:column;gap:5px;min-width:0}
+.daily-worker-heading strong{font:700 13px Manrope,sans-serif}
+.daily-worker-heading small{color:var(--portal-muted);font-size:10px;line-height:1.5}
+.daily-status-pill{flex:0 0 auto;padding:6px 9px;border-radius:999px;font:700 10px Manrope,sans-serif}
+.daily-status-completed{background:#e9f3eb;color:#3f7650}
+.daily-status-in_progress{background:#fff3df;color:#94681d}
+.daily-status-not_completed{background:#fff0ec;color:#a7482b}
+.daily-status-no_report{background:#eeefeb;color:#66695f}
+.daily-worker-reports{display:flex;flex-direction:column;gap:9px;margin-top:13px}
+.daily-worker-report-detail{padding:10px 12px;border-left:2px solid var(--portal-orange);background:#f8f7f3}
+.daily-worker-report-detail strong{font:700 11px Manrope,sans-serif}
+.daily-worker-report-detail p{margin:6px 0 0;color:#55574f;font-size:12px;line-height:1.65;white-space:pre-wrap}
+.daily-no-report,.daily-report-footnote{margin:11px 0 0;color:var(--portal-muted);font-size:11px;line-height:1.6}
+.daily-report-footnote{padding-top:12px;border-top:1px solid var(--portal-line)}
+.work-status-picker{max-width:320px}
+.work-status-picker select{width:100%;min-height:45px;padding:0 12px;border:1px solid var(--portal-line);border-radius:8px;background:#fff;color:var(--portal-ink);font:500 13px 'DM Sans',sans-serif}
+@media(max-width:760px){
+  .daily-report-meta{align-items:flex-start;flex-direction:column;gap:6px;padding:11px}
+  .daily-worker-entry{padding:12px}
+  .daily-worker-heading{align-items:flex-start}
+  .daily-worker-heading strong{font-size:12px}
+  .daily-status-pill{font-size:9px}
+}

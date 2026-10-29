@@ -1,4 +1,8 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
-  "installCommand": "pnpm install --frozen-lockfile"
+  "installCommand": "pnpm install --frozen-lockfile",
+  "crons": [
+    { "path": "/api/cron/daily-worker-report-utc0", "schedule": "59 23 * * *" },
+    { "path": "/api/cron/daily-worker-report-utc1", "schedule": "59 22 * * *" }
+  ]
 }

@@ -114,6 +114,7 @@ const titleSchema = z.object({ title: z.string().trim().min(2).max(80) });
 const projectSchema = z.object({ name: z.string().trim().min(2).max(160), description: z.string().trim().max(5000).nullable().optional(), client_id: z.string().uuid().nullable().optional(), worker_ids: z.array(z.string().uuid()).max(100).default([]) });
 const updateSchema = z.object({ title: z.string().trim().min(2).max(160), body: z.string().trim().min(2).max(5000) });
 const messageSchema = z.object({ project_id: z.string().uuid(), body: z.string().trim().min(2).max(5000) });
+const workerReportSchema = messageSchema.extend({ work_status: z.enum(['completed', 'in_progress', 'not_completed']) });
 const documentSchema = z.object({ project_id: z.string().uuid(), audience: z.enum(['admin_only', 'workers', 'client']) });
 
 function normalizeUsernameBase(value: string) {
@@ -136,6 +137,32 @@ function passwordFingerprint(password: string) { return createHash('sha256').upd
 function safeFileName(value: string) {
   const base = path.basename(value).normalize('NFKC').replace(/[^\p{L}\p{N}._-]+/gu, '-').replace(/^-+|-+$/g, '').slice(0, 140);
   return base || `documento-${randomUUID()}`;
+}
+const lisbonDateTime = new Intl.DateTimeFormat('en-GB', {
+  timeZone: 'Europe/Lisbon', year: 'numeric', month: '2-digit', day: '2-digit',
+  hour: '2-digit', minute: '2-digit', second: '2-digit', hourCycle: 'h23',
+});
+function lisbonParts(date: Date) {
+  return Object.fromEntries(lisbonDateTime.formatToParts(date).map((part) => [part.type, part.value]));
+}
+function lisbonOffsetMinutes(date: Date) {
+  const parts = lisbonParts(date);
+  const localAsUtc = Date.UTC(Number(parts.year), Number(parts.month) - 1, Number(parts.day), Number(parts.hour), Number(parts.minute), Number(parts.second));
+  return Math.round((localAsUtc - Math.floor(date.getTime() / 1000) * 1000) / 60_000);
+}
+function lisbonDateToUtc(date: string) {
+  const [year, month, day] = date.split('-').map(Number);
+  const localMidnightAsUtc = Date.UTC(year, month - 1, day);
+  let guess = new Date(localMidnightAsUtc);
+  for (let attempt = 0; attempt < 3; attempt += 1) {
+    guess = new Date(localMidnightAsUtc - lisbonOffsetMinutes(guess) * 60_000);
+  }
+  return guess;
+}
+function nextCalendarDate(date: string) {
+  const [year, month, day] = date.split('-').map(Number);
+  const next = new Date(Date.UTC(year, month - 1, day + 1));
+  return `${next.getUTCFullYear()}-${String(next.getUTCMonth() + 1).padStart(2, '0')}-${String(next.getUTCDate()).padStart(2, '0')}`;
 }
 function supabaseFailure(context: string, error: { code?: string; message?: string } | null | undefined): never {
   console.error(`[api] ${context}: ${error?.code ?? 'supabase_error'}`);
@@ -192,6 +219,75 @@ function asyncRoute(handler: (req: Request, res: Response) => Promise<unknown>):
   return (req, res, next) => { void handler(req, res).catch(next); };
 }
 
+function dailyWorkerReportJob(expectedOffsetMinutes: number): RequestHandler {
+  return asyncRoute(async (req, res) => {
+    const cronSecret = process.env.CRON_SECRET?.trim();
+    if (!cronSecret || req.get('authorization') !== `Bearer ${cronSecret}`) throw new HttpError(401, 'Agendamento não autorizado.');
+
+    const now = new Date();
+    const local = lisbonParts(now);
+    const offsetMinutes = lisbonOffsetMinutes(now);
+    if (Number(local.hour) !== 23 || offsetMinutes !== expectedOffsetMinutes) {
+      res.status(202).json({ ok: true, skipped: true, reason: 'outside_scheduled_lisbon_hour' });
+      return;
+    }
+
+    const reportDate = `${local.year}-${local.month}-${local.day}`;
+    const dayStart = lisbonDateToUtc(reportDate).toISOString();
+    const dayEnd = lisbonDateToUtc(nextCalendarDate(reportDate)).toISOString();
+    const service = createServiceClient();
+    const workersResult = await service.from('profiles').select('id,full_name').eq('role', 'worker').eq('enabled', true).order('full_name');
+    checkSupabase(workersResult, 'daily_report_workers');
+    const workerIds = (workersResult.data ?? []).map((worker) => worker.id);
+    const [reportsResult, assignmentsResult] = await Promise.all([
+      service.from('progress_reports').select('id,worker_id,project_id,body,work_status,created_at').gte('created_at', dayStart).lt('created_at', dayEnd).order('created_at', { ascending: true }).limit(5000),
+      workerIds.length ? service.from('project_workers').select('worker_id,project_id').in('worker_id', workerIds) : Promise.resolve({ data: [], error: null }),
+    ]);
+    checkSupabase(reportsResult, 'daily_report_activity');
+    checkSupabase(assignmentsResult, 'daily_report_assignments');
+    const projectIds = [...new Set([...(assignmentsResult.data ?? []).map((item) => item.project_id), ...(reportsResult.data ?? []).map((item) => item.project_id)])];
+    const projectsResult = projectIds.length
+      ? await service.from('projects').select('id,name').in('id', projectIds)
+      : { data: [], error: null };
+    checkSupabase(projectsResult, 'daily_report_projects');
+
+    const projectNames = new Map((projectsResult.data ?? []).map((project) => [project.id, project.name]));
+    const reportsByWorker = new Map<string, typeof reportsResult.data>(workerIds.map((id) => [id, []]));
+    for (const report of reportsResult.data ?? []) reportsByWorker.get(report.worker_id)?.push(report);
+    const assignedProjects = new Map<string, string[]>();
+    for (const assignment of assignmentsResult.data ?? []) {
+      const names = assignedProjects.get(assignment.worker_id) ?? [];
+      const name = projectNames.get(assignment.project_id);
+      if (name && !names.includes(name)) names.push(name);
+      assignedProjects.set(assignment.worker_id, names);
+    }
+    const entries = (workersResult.data ?? []).map((worker) => {
+      const reports = reportsByWorker.get(worker.id) ?? [];
+      const statuses = reports.map((report) => report.work_status);
+      const status = reports.length === 0 ? 'no_report'
+        : statuses.includes('not_completed') ? 'not_completed'
+          : statuses.includes('in_progress') ? 'in_progress' : 'completed';
+      return {
+        worker_id: worker.id,
+        full_name: worker.full_name,
+        assigned_projects: assignedProjects.get(worker.id) ?? [],
+        status,
+        report_count: reports.length,
+        reports: reports.map((report) => ({
+          project_id: report.project_id,
+          project_name: projectNames.get(report.project_id) ?? 'Obra sem nome',
+          work_status: report.work_status,
+          body: report.body,
+          created_at: report.created_at,
+        })),
+      };
+    });
+    const saved = await service.from('daily_worker_reports').upsert({ report_date: reportDate, entries, generated_at: now.toISOString(), timezone: 'Europe/Lisbon' }, { onConflict: 'report_date' }).select('report_date,entries,generated_at,timezone').single();
+    checkSupabase(saved, 'save_daily_worker_report');
+    res.json({ ok: true, report: saved.data });
+  });
+}
+
 app.disable('x-powered-by');
 app.use(helmet({ contentSecurityPolicy: false, frameguard: false, crossOriginEmbedderPolicy: false }));
 app.use(cors(corsOptions));
@@ -229,6 +325,8 @@ const audioUpload = multer({
 });
 
 app.get('/api/health', (_req, res) => res.json({ status: 'ok', supabaseConfigured: hasSupabaseConfig() }));
+app.get('/api/cron/daily-worker-report-utc0', dailyWorkerReportJob(0));
+app.get('/api/cron/daily-worker-report-utc1', dailyWorkerReportJob(60));
 
 app.post('/api/speech/transcribe', requireAuth(['admin', 'worker']), audioUpload.single('file'), asyncRoute(async (req, res) => {
   if (!req.file) throw new HttpError(400, 'Não foi recebido áudio. Grave novamente.');
@@ -539,6 +637,13 @@ app.get('/api/admin/internal', requireAuth(['admin']), asyncRoute(async (req, re
   res.json({ messages });
 }));
 
+app.get('/api/admin/daily-work-reports', requireAuth(['admin']), asyncRoute(async (req, res) => {
+  const { service } = requireRequestContext(req);
+  const result = await service.from('daily_worker_reports').select('report_date,entries,generated_at,timezone').order('report_date', { ascending: false }).limit(1).maybeSingle();
+  checkSupabase(result, 'latest_daily_worker_report');
+  res.json({ report: result.data ?? null });
+}));
+
 app.post('/api/admin/messages', requireAuth(['admin']), asyncRoute(async (req, res) => {
   const parsed = z.object({ worker_id: z.string().uuid(), project_id: z.string().uuid(), body: z.string().trim().min(2).max(5000) }).safeParse(req.body);
   if (!parsed.success) throw new HttpError(400, 'Escolha um trabalhador, uma obra atribuída e escreva uma mensagem.');
@@ -619,10 +724,10 @@ app.post('/api/worker/messages', requireAuth(['worker']), asyncRoute(async (req,
   res.status(201).json({ message: result.data });
 }));
 app.post('/api/worker/reports', requireAuth(['worker']), asyncRoute(async (req, res) => {
-  const parsed = messageSchema.safeParse(req.body);
+  const parsed = workerReportSchema.safeParse(req.body);
   if (!parsed.success) throw new HttpError(400, 'Escolha uma obra e escreva um relatório.');
   const { userClient, profile } = requireRequestContext(req);
-  const result = await userClient.from('progress_reports').insert({ project_id: parsed.data.project_id, worker_id: profile.id, body: parsed.data.body }).select('id,project_id,body,created_at').single();
+  const result = await userClient.from('progress_reports').insert({ project_id: parsed.data.project_id, worker_id: profile.id, body: parsed.data.body, work_status: parsed.data.work_status }).select('id,project_id,body,work_status,created_at').single();
   checkSupabase(result, 'create_worker_report');
   res.status(201).json({ report: result.data });
 }));
