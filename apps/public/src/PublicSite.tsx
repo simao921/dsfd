@@ -49,8 +49,7 @@ const nav = [
 function Brand({ light = false }: { light?: boolean }) {
   return (
     <Link to="/" className={`brand ${light ? 'brand-light' : ''}`} aria-label="Obragoito — início">
-      <span className="brand-symbol" aria-hidden="true"><i /><i /><i /></span>
-      <span className="brand-lockup"><span className="brand-word">OBRAGOITO<span className="brand-dot">.</span></span><span className="brand-tagline">CONSTRUÇÕES E OBRAS PÚBLICAS</span></span>
+      <img className="brand-logo" src="/obragoito-logo.svg" alt="Obragoito — Construções e Obras Públicas" />
     </Link>
   );
 }
@@ -169,93 +168,128 @@ function Eyebrow({ children, dark = false }: { children: React.ReactNode; dark?:
   return <div className={`eyebrow ${dark ? 'eyebrow-dark' : ''}`}><span className="eyebrow-mark" />{children}</div>;
 }
 
+function PageProgress() {
+  const { scrollYProgress } = useScroll();
+  return <motion.div className="page-progress" style={{ scaleX: scrollYProgress }} aria-hidden="true" />;
+}
+
+function Reveal({ children, className = '', delay = 0, ariaLabel }: { children: React.ReactNode; className?: string; delay?: number; ariaLabel?: string }) {
+  const sceneRef = useRef<HTMLDivElement>(null);
+  const reduceMotion = useReducedMotion();
+  const { scrollYProgress } = useScroll({ target: sceneRef, offset: ['start end', 'end start'] });
+  const sceneY = useTransform(scrollYProgress, [0, 1], reduceMotion ? [0, 0] : [34, -34]);
+  return (
+    <motion.div
+      ref={sceneRef}
+      className={className}
+      style={{ y: sceneY }}
+      initial={reduceMotion ? false : { opacity: 0, clipPath: 'inset(0 0 12% 0)' }}
+      whileInView={reduceMotion ? undefined : { opacity: 1, clipPath: 'inset(0 0 0% 0)' }}
+      viewport={{ once: true, amount: 0.12 }}
+      transition={{ duration: 0.85, delay, ease: [0.22, 1, 0.36, 1] }}
+      aria-label={ariaLabel}
+    >
+      {children}
+    </motion.div>
+  );
+}
+
+function ParallaxImage({ src, alt, className = '', loading = 'lazy' }: { src: string; alt: string; className?: string; loading?: 'lazy' | 'eager' }) {
+  const imageRef = useRef<HTMLImageElement>(null);
+  const reduceMotion = useReducedMotion();
+  const { scrollYProgress } = useScroll({ target: imageRef, offset: ['start end', 'end start'] });
+  const imageY = useTransform(scrollYProgress, [0, 1], reduceMotion ? [0, 0] : [-18, 18]);
+  return <motion.img ref={imageRef} src={src} alt={alt} className={className} loading={loading} style={{ y: imageY, scale: reduceMotion ? 1 : 1.08 }} />;
+}
+
 function HomePage() {
   const heroRef = useRef<HTMLElement>(null);
   const reduceMotion = useReducedMotion();
   const { scrollYProgress } = useScroll({ target: heroRef, offset: ['start start', 'end start'] });
   const imageY = useTransform(scrollYProgress, [0, 1], [0, reduceMotion ? 0 : 82]);
+  const imageScale = useTransform(scrollYProgress, [0, 1], reduceMotion ? [1.045, 1.045] : [1.045, 1.13]);
+  const contentY = useTransform(scrollYProgress, [0, 1], [0, reduceMotion ? 0 : -76]);
+  const contentOpacity = useTransform(scrollYProgress, [0, .72, 1], [1, reduceMotion ? 1 : .94, 0]);
+  const gridOpacity = useTransform(scrollYProgress, [0, 1], [.8, 0]);
   return (
     <main>
       <section className="hero" ref={heroRef}>
-        <motion.div className="hero-image-wrap" style={{ y: imageY }}>
+        <motion.div className="hero-image-wrap" style={{ y: imageY, scale: imageScale }}>
           <img src="/images/praca-nuno-goncalves.jpg" alt="Praça Nuno Gonçalves, obra do portefólio Obragoito" fetchPriority="high" />
         </motion.div>
         <div className="hero-overlay" />
-        <div className="hero-grid" aria-hidden="true" />
-        <div className="hero-content">
+        <motion.div className="hero-grid" style={{ opacity: gridOpacity }} aria-hidden="true" />
+        <motion.div className="hero-content" style={{ y: contentY, opacity: contentOpacity }}>
           <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7 }}>
             <Eyebrow>Construções &amp; Obras Públicas · Portugal</Eyebrow>
           </motion.div>
-          <motion.h1 initial={{ opacity: 0, y: 32 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.85, delay: 0.12 }}>
-            Construímos<br /><em>espaços</em> que ficam.
+          <motion.h1 initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.2, delay: 0.1 }}>
+            <motion.span className="hero-title-line" initial={{ opacity: 0, y: 38 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.85, delay: 0.16, ease: [0.22, 1, 0.36, 1] }}>Construímos</motion.span>
+            <motion.span className="hero-title-line" initial={{ opacity: 0, y: 38 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.85, delay: 0.28, ease: [0.22, 1, 0.36, 1] }}><em>espaços</em> que ficam.</motion.span>
           </motion.h1>
           <motion.div className="hero-bottom" initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.65, delay: 0.3 }}>
             <p>Construção civil e obras públicas.<br />Mais de 35 anos de experiência em Portugal.</p>
             <Link to="/projetos" className="hero-cta"><span>Ver obras realizadas</span><ArrowDownRight size={19} /></Link>
           </motion.div>
-        </div>
+        </motion.div>
         <div className="hero-index"><span>01</span><i /><small>OBRA FEITA</small></div>
         <div className="hero-caption"><span>PORTFÓLIO</span><span>PRAÇA NUNO GONÇALVES</span></div>
-        <motion.div className="hero-stamp" animate={reduceMotion ? undefined : { rotate: 360 }} transition={{ duration: 38, repeat: Infinity, ease: 'linear' }} aria-label="35 anos de experiência">
-          <svg viewBox="0 0 130 130" aria-hidden="true"><defs><path id="stamp-circle" d="M65,65 m-48,0 a48,48 0 1,1 96,0 a48,48 0 1,1 -96,0" /></defs><text><textPath href="#stamp-circle">OBRA FEITA COM RIGOR · DESDE 1991 · </textPath></text></svg>
-          <span>35<small>+</small></span>
-        </motion.div>
         <Link className="hero-scroll" to="/projetos"><span>Deslize para explorar</span><span className="scroll-line" /></Link>
       </section>
-      <section className="trust-bar section-pad" aria-label="Compromissos Obragoito">
+      <Reveal className="trust-bar section-pad scene-trust" ariaLabel="Compromissos Obragoito">
         <div><span className="trust-number">35+</span><span><strong>Anos de experiência</strong><small>Construção em Portugal desde 1991</small></span></div>
         <div><span className="trust-number">250</span><span><strong>Obras realizadas</strong><small>Projetos públicos e privados</small></span></div>
         <div><span className="trust-mark"><Check size={18} /></span><span><strong>Rigor em cada detalhe</strong><small>Do planeamento à entrega</small></span></div>
-      </section>
+      </Reveal>
 
       <div className="service-ticker" aria-label="Áreas de atuação"><div className="ticker-track">{[0, 1].map((loop) => <div className="ticker-set" key={loop} aria-hidden={loop === 1}>{services.map((service) => <span key={`${loop}-${service.number}`}>{service.title}<i /></span>)}</div>)}</div></div>
 
-      <section className="intro section-pad">
+      <Reveal className="intro section-pad scene-intro">
         <div className="intro-side"><Eyebrow>01 / Quem somos</Eyebrow><span className="intro-line" /><span className="micro-label">A NOSSA EXPERIÊNCIA</span></div>
         <div className="intro-main">
           <h2>Há mais de três décadas a dar <em>forma ao que importa.</em></h2>
           <div className="intro-bottom"><p>Criada em 1991, a Obragoito constrói e reabilita com experiência, competência técnica e compromisso com a qualidade — de pequenas intervenções a grandes empreendimentos.</p><ArrowLink to="/sobre">Conheça a Obragoito</ArrowLink></div>
         </div>
         <div className="intro-stat"><strong>35<span>+</span></strong><small>ANOS DE EXPERIÊNCIA</small></div>
-      </section>
+      </Reveal>
 
-      <section className="works-section section-pad">
+      <Reveal className="works-section section-pad scene-works">
         <div className="section-heading"><div><Eyebrow>02 / Obra feita</Eyebrow><h2>Projetos que <em>ficam.</em></h2></div><ArrowLink to="/projetos">Explorar portefólio</ArrowLink></div>
         <div className="featured-projects">
           <Link to="/projetos" className="project-card project-card-large">
-            <div className="project-image"><img src={projects[0].image} alt={projects[0].title} loading="lazy" /><span className="project-open"><ArrowUpRight size={19} /></span></div>
+            <div className="project-image"><ParallaxImage src={projects[0].image} alt={projects[0].title} /><span className="project-open"><ArrowUpRight size={19} /></span></div>
             <div className="project-meta"><span className="project-number">{projects[0].number} / ESPAÇO PÚBLICO</span><h3>{projects[0].title}</h3></div>
           </Link>
           <Link to="/projetos" className="project-card project-card-offset">
-            <div className="project-image"><img src={projects[2].image} alt={projects[2].title} loading="lazy" /><span className="project-open"><ArrowUpRight size={19} /></span></div>
+            <div className="project-image"><ParallaxImage src={projects[2].image} alt={projects[2].title} /><span className="project-open"><ArrowUpRight size={19} /></span></div>
             <div className="project-meta"><span className="project-number">{projects[2].number} / OBRA PÚBLICA</span><h3>{projects[2].title}</h3></div>
           </Link>
           <Link to="/projetos" className="project-card project-card-third">
-            <div className="project-image"><img src={projects[4].image} alt={projects[4].title} loading="lazy" /><span className="project-open"><ArrowUpRight size={19} /></span></div>
+            <div className="project-image"><ParallaxImage src={projects[4].image} alt={projects[4].title} /><span className="project-open"><ArrowUpRight size={19} /></span></div>
             <div className="project-meta"><span className="project-number">{projects[4].number} / URBANISMO</span><h3>{projects[4].title}</h3></div>
           </Link>
         </div>
-      </section>
+      </Reveal>
 
-      <section className="numbers-band">
+      <Reveal className="numbers-band scene-numbers">
         <div className="numbers-label"><Eyebrow dark>03 / Experiência</Eyebrow><p>Conhecimento construído<br />ao longo do tempo.</p></div>
         <div className="number-item"><strong>35<span>+</span></strong><small>ANOS NO MERCADO<br />NACIONAL</small></div>
         <div className="number-divider" />
         <div className="number-item"><strong>250<span>+</span></strong><small>OBRAS REALIZADAS<br />AO LONGO DA NOSSA HISTÓRIA</small></div>
         <div className="numbers-stamp"><ShieldCheck size={29} strokeWidth={1.2} /><span>QUALIDADE<br />E COMPETÊNCIA</span></div>
-      </section>
+      </Reveal>
 
-      <section className="services-section section-pad">
+      <Reveal className="services-section section-pad scene-services">
         <div className="section-heading"><div><Eyebrow>04 / O que fazemos</Eyebrow><h2>Construção com <em>visão.</em></h2></div><ArrowLink to="/servicos">Ver áreas de negócio</ArrowLink></div>
         <div className="services-list">{services.map((service) => <Link to="/servicos" className="service-row" key={service.number}><span className="service-no">{service.number}</span><service.icon className="service-icon" size={25} strokeWidth={1.35} /><div className="service-copy"><h3>{service.title}</h3><p>{service.text}</p></div><span className="service-arrow"><ArrowUpRight size={18} /></span></Link>)}</div>
-      </section>
+      </Reveal>
 
-      <section className="quote-section">
-        <div className="quote-image"><img src="/images/rotunda-benfica.jpg" alt="Rotunda de Benfica, projeto do portefólio Obragoito" loading="lazy" /></div>
+      <Reveal className="quote-section scene-quote">
+        <div className="quote-image"><ParallaxImage src="/images/rotunda-benfica.jpg" alt="Rotunda de Benfica, projeto do portefólio Obragoito" /></div>
         <div className="quote-content"><Eyebrow>05 / Compromisso</Eyebrow><blockquote>“A qualidade está no que se vê. E, sobretudo, no que <em>fica.</em>”</blockquote><Link to="/sobre" className="text-link">O nosso compromisso <ArrowUpRight size={15} /></Link></div>
-      </section>
+      </Reveal>
 
-      <section className="contact-strip section-pad"><div><Eyebrow>06 / Próximo projeto</Eyebrow><h2>Vamos construir<br /><em>o próximo.</em></h2></div><ArrowLink to="/contactos">Fale connosco</ArrowLink><div className="contact-decoration" aria-hidden="true">OG</div></section>
+      <Reveal className="contact-strip section-pad scene-contact"><div><Eyebrow>06 / Próximo projeto</Eyebrow><h2>Vamos construir<br /><em>o próximo.</em></h2></div><ArrowLink to="/contactos">Fale connosco</ArrowLink><div className="contact-decoration" aria-hidden="true">OG</div></Reveal>
     </main>
   );
 }
@@ -266,7 +300,7 @@ function ProjectsPage() {
   return (
     <main className="inner-page projects-page">
       <section className="page-hero section-pad"><Eyebrow>Portefólio / 2026</Eyebrow><h1>Obra feita.<br /><em>Memória construída.</em></h1><p>Uma seleção de projetos publicados pela Obragoito nas diferentes áreas de atuação.</p></section>
-      <section className="portfolio-grid section-pad" aria-label="Projetos Obragoito">{projects.map((project, index) => <button type="button" className={`portfolio-card portfolio-card-${index + 1}`} key={project.number} onClick={() => setSelected(project)}><span className="portfolio-image"><img src={project.image} alt={project.title} loading="lazy" /><span className="portfolio-open"><MoveUpRight size={18} /></span></span><span className="portfolio-meta"><small>{project.number} / OBRAGOITO</small><strong>{project.title}</strong></span></button>)}</section>
+      <section className="portfolio-grid section-pad" aria-label="Projetos Obragoito">{projects.map((project, index) => <button type="button" className={`portfolio-card portfolio-card-${index + 1}`} key={project.number} onClick={() => setSelected(project)}><span className="portfolio-image"><ParallaxImage src={project.image} alt={project.title} /><span className="portfolio-open"><MoveUpRight size={18} /></span></span><span className="portfolio-meta"><small>{project.number} / OBRAGOITO</small><strong>{project.title}</strong></span></button>)}</section>
       <section className="next-project section-pad"><Eyebrow>Tem um projeto em mente?</Eyebrow><h2>O próximo projeto<br />pode ser <em>o seu.</em></h2><ArrowLink to="/contactos">Pedir contacto</ArrowLink></section>
       <AnimatePresence>{selected && <motion.div className="modal-backdrop" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setSelected(null)}><motion.div className="project-modal" initial={{ y: 28, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: 18, opacity: 0 }} onClick={(event) => event.stopPropagation()} role="dialog" aria-modal="true" aria-label={selected.title}><button className="modal-close" onClick={() => setSelected(null)} aria-label="Fechar"><X size={20} /></button><img src={selected.image} alt={selected.title} /><div className="modal-copy"><span className="eyebrow">{selected.number} / Portefólio Obragoito</span><h2>{selected.title}</h2><p>{selected.summary}</p><ArrowLink to="/contactos">Falar sobre um projeto</ArrowLink></div></motion.div></motion.div>}</AnimatePresence>
     </main>
@@ -295,5 +329,5 @@ function NotFound() {
 export default function PublicSite() {
   const location = useLocation();
   useEffect(() => { window.scrollTo({ top: 0, behavior: 'instant' as ScrollBehavior }); }, [location.pathname]);
-  return <div className="public-site"><Header /><AnimatePresence mode="wait"><Routes location={location} key={location.pathname}><Route path="/" element={<HomePage />} /><Route path="/home" element={<HomePage />} /><Route path="/servicos" element={<ServicesPage />} /><Route path="/projetos" element={<ProjectsPage />} /><Route path="/sobre" element={<AboutPage />} /><Route path="/contactos" element={<ContactPage />} /><Route path="*" element={<NotFound />} /></Routes></AnimatePresence><Footer /><CookieConsent /></div>;
+  return <div className="public-site"><PageProgress /><Header /><AnimatePresence mode="wait"><motion.div className="route-transition" key={location.pathname} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.35, ease: 'easeOut' }}><Routes location={location}><Route path="/" element={<HomePage />} /><Route path="/home" element={<HomePage />} /><Route path="/servicos" element={<ServicesPage />} /><Route path="/projetos" element={<ProjectsPage />} /><Route path="/sobre" element={<AboutPage />} /><Route path="/contactos" element={<ContactPage />} /><Route path="*" element={<NotFound />} /></Routes></motion.div></AnimatePresence><Footer /><CookieConsent /></div>;
 }

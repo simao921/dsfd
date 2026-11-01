@@ -45,7 +45,7 @@ No desenvolvimento local, deixa `VITE_API_ORIGIN` vazio para usar o proxy Vite e
 
 Os sites têm configurações próprias em `apps/public/vercel.json`, `apps/admin/vercel.json`, `apps/clients/vercel.json` e `apps/workers/vercel.json`. A API Express é servida por `api/[...path].ts`, uma função Vercel explícita para todas as rotas `/api/*`. Cria **cinco projetos Vercel separados a partir do mesmo repositório**: quatro estáticos e um para a API. Nos quatro sites, define o Root Directory respetivo (`apps/public`, `apps/admin`, `apps/clients` ou `apps/workers`) e ativa a inclusão dos ficheiros partilhados fora dessa pasta, para que o build possa ler `packages/` e a configuração pnpm da raiz. A pasta de saída de cada site é `dist`.
 
-Para a API, usa a raiz do repositório como Root Directory. Associa os domínios `obragoito.pt`, `gestao.obragoito.pt`, `clientes.obragoito.pt`, `equipa.obragoito.pt` e `api.obragoito.pt` aos projetos correspondentes e aponta o DNS no Vercel. Define `VITE_API_ORIGIN=https://api.obragoito.pt` nas variáveis de build dos quatro sites.
+Para a API, usa a raiz do repositório como Root Directory. Associa os domínios `obragoito.pt`, `gestao.obragoito.pt`, `clientes.obragoito.pt`, `equipa.obragoito.pt` e `api.obragoito.pt` aos projetos correspondentes e aponta o DNS no Vercel. Os portais usam `https://api.obragoito.pt` automaticamente em produção; `VITE_API_ORIGIN` pode ser definido como override para outro domínio ou ambiente.
 
 No projeto da API Vercel, adiciona como variáveis **server-side** `SUPABASE_URL`, `SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY` e `CRON_SECRET`. Define `COOKIE_SECURE=true`. Gera `CRON_SECRET` como uma string aleatória com pelo menos 16 caracteres; a Vercel envia-a no cabeçalho das chamadas Cron. Não uses o prefixo `VITE_` em chaves privadas. Para previews `*.vercel.app`, acrescenta as origens permitidas à variável `ALLOWED_ORIGINS` da API.
 
@@ -58,7 +58,7 @@ Os passos acima preparam o repositório, mas não fazem deploy nem alteram DNS. 
 ## Variáveis locais e validação
 
 - `SUPABASE_URL`, `SUPABASE_ANON_KEY` e `SUPABASE_SERVICE_ROLE_KEY`: ligação ao projeto Supabase único; service role apenas no servidor.
-- `VITE_API_ORIGIN`: vazio em localhost; origem pública da API, por exemplo `https://api.obragoito.pt`, nos builds dos sites Vercel.
+- `VITE_API_ORIGIN`: vazio em localhost; opcional em produção, onde o cliente usa `https://api.obragoito.pt` por defeito. Defina-o apenas se a API usar outro domínio.
 - `CRON_SECRET`: segredo server-side usado para proteger o fecho diário dos trabalhadores.
 - `VITE_UPLOAD_LIMIT_MB`: 15 em localhost; os comandos de build Vercel definem 4.
 
