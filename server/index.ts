@@ -69,6 +69,9 @@ function createAnonClient(accessToken?: string) {
 function isTrustedOrigin(origin: string) {
   const extras = [
     'https://gestaoobragoito.vercel.app',
+    'https://clientesobragoito.vercel.app',
+    'https://workersobragoito.vercel.app',
+    'https://obragoito.vercel.app',
     'https://obragoito.pt',
     ...(process.env.ALLOWED_ORIGINS ?? '').split(',').map((value) => value.trim()).filter(Boolean),
   ];

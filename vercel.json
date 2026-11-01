@@ -1,9 +1,13 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "framework": null,
-  "buildCommand": "mkdir -p dist && printf '%s\n' '<!doctype html><html><body></body></html>' > dist/index.html",
-  "outputDirectory": "dist",
   "installCommand": "pnpm install --frozen-lockfile",
+  "functions": {
+    "api/[...path].ts": {
+      "runtime": "nodejs22.x",
+      "maxDuration": 30
+    }
+  },
   "crons": [
     { "path": "/api/cron/daily-worker-report-utc0", "schedule": "59 23 * * *" },
     { "path": "/api/cron/daily-worker-report-utc1", "schedule": "59 22 * * *" }

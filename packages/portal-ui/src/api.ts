@@ -19,7 +19,7 @@ export class ApiError extends Error {
 }
 
 const configuredApiOrigin = (import.meta.env.VITE_API_ORIGIN ?? '').trim().replace(/\/+$/, '');
-const API_ORIGIN = configuredApiOrigin || (import.meta.env.PROD ? 'https://api.obragoito.pt' : '');
+const API_ORIGIN = configuredApiOrigin || (import.meta.env.PROD ? 'https://apiobragoito.vercel.app' : '');
 
 export async function api<T>(path: string, options: RequestInit = {}): Promise<T> {
   const headers = new Headers(options.headers);
