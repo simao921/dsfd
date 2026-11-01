@@ -743,7 +743,7 @@ app.post('/api/admin/documents', requireAuth(['admin']), upload.single('file'), 
   }
   res.status(201).json({ document: metadata.data });
 }));
-app.post('/api/documents/:id/download', requireAuth(['admin', 'client', 'worker']), asyncRoute(async (req, res) => {
+app.post('/api/documents/:id/download', requireAuth(['admin', 'client', 'worker']), asyncRoute(async (req: Request, res: Response) => {
   const { userClient, service } = requireRequestContext(req);
   const allowed = await userClient.from('project_documents').select('id,storage_path').eq('id', req.params.id).maybeSingle();
   checkSupabase(allowed, 'authorize_document_download');
@@ -769,11 +769,11 @@ if (process.env.NODE_ENV === 'production' && !process.env.VERCEL) {
     const hostname = rawHost.toLowerCase().replace(/:\d+$/, '');
     return hostMap[hostname] ?? 'public';
   };
-  app.use((req, res, next) => {
+  app.use((req: Request, res: Response, next: NextFunction) => {
     if (req.path.startsWith('/api/')) { next(); return; }
     express.static(path.join(distRoot, siteForRequest(req)), { index: false, maxAge: '1h', fallthrough: true })(req, res, next);
   });
-  app.get(/.*/, (req, res) => {
+  app.get(/.*/, (req: Request, res: Response) => {
     if (path.extname(req.path)) { res.status(404).type('text/plain').send('Not found'); return; }
     const site = siteForRequest(req);
     res.setHeader('Cache-Control', 'no-store');

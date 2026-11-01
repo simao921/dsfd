@@ -117,7 +117,7 @@ function useResource<T>(path: string) {
 }
 
 function BrandMark({ dark = false }: { dark?: boolean }) {
-  return <span className={`portal-brand ${dark ? 'portal-brand-dark' : ''}`}><span className="portal-brand-mark"><i /><i /><i /></span><span>OBRAGOITO<span className="portal-brand-dot">.</span></span></span>;
+  return <span className={`portal-brand ${dark ? 'portal-brand-dark' : ''}`}><img className="portal-brand-logo" src="/obragoito-logo.svg" alt="Obragoito" /></span>;
 }
 
 function LoginScreen({ kind, onLogin, setupError, initialError }: { kind: PortalKind; onLogin: (identifier: string, password: string) => Promise<void>; setupError: string; initialError: string }) {
@@ -142,7 +142,7 @@ function LoginScreen({ kind, onLogin, setupError, initialError }: { kind: Portal
         <form onSubmit={submit} className="login-form"><label>{meta.loginLabel}<input autoComplete={kind === 'workers' ? 'username' : 'email'} type={kind === 'workers' ? 'text' : 'email'} value={identifier} onChange={(event) => setIdentifier(event.target.value)} placeholder={kind === 'workers' ? 'ex.: joao.silva' : 'nome@empresa.pt'} required /></label><label>Palavra-passe<input autoComplete="current-password" type="password" value={password} onChange={(event) => setPassword(event.target.value)} placeholder="Introduza a sua palavra-passe" required /></label><button className="button-primary login-submit" type="submit" disabled={submitting}>{submitting ? 'A validar…' : 'Iniciar sessão'}<ArrowRight size={17} /></button></form>
         <div className="login-assist">{kind === 'workers' ? <><HardHat size={16} /><span>Não tem acesso? Contacte a administração para receber as credenciais.</span></> : <><ShieldCheck size={16} /><span>O acesso é criado e gerido pela Obragoito. Não existe registo público.</span></>}</div>
       </div>
-      <div className="login-panel-footer"><span>© {new Date().getFullYear()} Obragoito</span><a href="https://obragoito.pt/" target="_blank" rel="noreferrer">Site público <ArrowUpRight size={13} /></a></div>
+      <div className="login-panel-footer"><span>© {new Date().getFullYear()} Obragoito</span><a href="https://obragoito.vercel.app/" target="_blank" rel="noreferrer">Site público <ArrowUpRight size={13} /></a></div>
     </section>
   </main>;
 }
@@ -184,7 +184,7 @@ function PortalAppFrame({ kind, user, onLogout, children }: { kind: PortalKind; 
       <div className="portal-sidebar-brand"><Link to="/"><BrandMark /></Link><button className="mobile-sidebar-close" onClick={() => setMobileMenu(false)} aria-label="Fechar menu"><X size={19} /></button></div>
       <div className="sidebar-caption">{meta.subtitle}</div>
       <nav className="portal-nav" aria-label="Navegação do portal">{navByKind[kind].map((item) => <NavLink key={item.to} to={item.to} end={item.to === '/'} className={({ isActive }) => isActive ? 'portal-nav-link is-active' : 'portal-nav-link'}><item.icon size={17} strokeWidth={1.7} /><span>{item.label}</span>{item.to === '/' && <span className="nav-active-mark" />}</NavLink>)}</nav>
-      <div className="sidebar-bottom"><div className="sidebar-help"><CircleHelp size={16} /><span><strong>Precisa de ajuda?</strong><small>Fale com a administração</small></span><ArrowUpRight size={14} /></div><a href="https://obragoito.pt/" className="portal-public-link" target="_blank" rel="noreferrer">Site público <ArrowUpRight size={13} /></a><span className="portal-version">OBRAGOITO · {kind === 'admin' ? 'GESTÃO' : kind === 'clients' ? 'CLIENTES' : 'EQUIPA'}</span></div>
+      <div className="sidebar-bottom"><div className="sidebar-help"><CircleHelp size={16} /><span><strong>Precisa de ajuda?</strong><small>Fale com a administração</small></span><ArrowUpRight size={14} /></div><a href="https://obragoito.vercel.app/" className="portal-public-link" target="_blank" rel="noreferrer">Site público <ArrowUpRight size={13} /></a><span className="portal-version">OBRAGOITO · {kind === 'admin' ? 'GESTÃO' : kind === 'clients' ? 'CLIENTES' : 'EQUIPA'}</span></div>
     </aside>
     {mobileMenu && <button className="sidebar-backdrop" aria-label="Fechar menu" onClick={() => setMobileMenu(false)} />}
     <div className="portal-main">

@@ -135,3 +135,75 @@ body{font-size:14px}
   .daily-worker-heading strong{font-size:12px}
   .daily-status-pill{font-size:9px}
 }
+
+/* Public-site visual system */
+:root{
+  --portal-ink:#003a54;
+  --portal-muted:#68747a;
+  --portal-orange:#f7941d;
+  --portal-paper:#f5f4ef;
+  --portal-line:rgba(0,58,84,.16);
+  --portal-white:#fffefa;
+}
+body{background:var(--portal-paper)}
+.portal-brand-logo{display:block;width:174px;height:auto}
+.portal-brand:not(.portal-brand-dark) .portal-brand-logo{filter:brightness(0) invert(1)}
+.portal-brand-dark .portal-brand-logo{filter:none}
+.login-screen{background:var(--portal-paper)}
+.login-art{background:#003a54}
+.login-art-shade{background:linear-gradient(180deg,rgba(0,30,44,.12),rgba(0,30,44,.78)),linear-gradient(90deg,rgba(0,30,44,.34),transparent 80%)}
+.login-lines{inset:24px;border-color:rgba(255,255,255,.2)}
+.login-art-caption span,.login-art-count sup,.login-kicker,.status-dot{color:var(--portal-orange)}
+.status-dot{background:var(--portal-orange)}
+.login-panel{background:linear-gradient(145deg,#fffefa,#f0f2ed)}
+.login-form-wrap h1{color:var(--portal-ink)}
+.button-primary{background:var(--portal-orange)}
+.button-primary:hover:not(:disabled){background:#db7d10}
+.portal-app-shell{background:var(--portal-paper)}
+.portal-sidebar{background:var(--portal-ink)}
+.portal-sidebar-brand{border-bottom:1px solid rgba(255,255,255,.14)}
+.sidebar-caption{color:rgba(255,255,255,.52)}
+.portal-nav-link.is-active{background:rgba(247,148,29,.16)}
+.portal-nav-link.is-active>svg,.sidebar-help>svg:first-child{color:var(--portal-orange)}
+.nav-active-mark{background:var(--portal-orange)}
+.portal-main{background:var(--portal-paper)}
+.portal-topbar{background:rgba(255,254,250,.88);border-bottom:1px solid var(--portal-line);backdrop-filter:blur(16px)}
+.topbar-title{color:var(--portal-ink);font-family:Manrope,'DM Sans',sans-serif;letter-spacing:.04em}
+.secure-label{color:var(--portal-muted)}
+.profile-avatar{background:var(--portal-orange);color:#fff}
+.portal-content{background:radial-gradient(circle at 90% 0,rgba(247,148,29,.08),transparent 28rem)}
+.portal-page-heading{position:relative;padding-bottom:30px}
+.portal-page-heading::after{content:'';position:absolute;left:0;bottom:0;width:100%;height:1px;background:var(--portal-line)}
+.portal-eyebrow{color:var(--portal-orange)}
+.portal-page-heading h1{color:var(--portal-ink);letter-spacing:-.07em}
+.portal-page-heading p{max-width:620px}
+.summary-card,.panel-card,.empty-state,.data-state{border-color:var(--portal-line);background:rgba(255,254,250,.88);box-shadow:0 12px 35px rgba(0,58,84,.055)}
+.summary-card{position:relative;overflow:hidden;border-radius:0}
+.summary-card::after{content:'';position:absolute;right:-28px;bottom:-38px;width:110px;height:110px;border:1px solid rgba(247,148,29,.22);border-radius:50%}
+.summary-card-icon{border-radius:0;background:rgba(247,148,29,.12);color:var(--portal-orange)}
+.summary-card>strong{color:var(--portal-ink)}
+.summary-card-label{color:var(--portal-muted)}
+.panel-card{border-radius:0}
+.panel-heading{border-bottom-color:var(--portal-line)}
+.panel-heading h2{color:var(--portal-ink)}
+.quick-actions a,.button-secondary{border-radius:0}
+.quick-actions a:hover{background:#fff1df}
+.button-secondary:hover:not(:disabled){border-color:var(--portal-orange);color:var(--portal-orange)}
+.data-table th{background:#e8edf0;color:var(--portal-ink)}
+.data-table tr{border-bottom-color:var(--portal-line)}
+.data-table tr:hover{background:rgba(247,148,29,.06)}
+.project-card,.document-card,.message-card,.service-card{border-radius:0}
+.project-card:hover,.document-card:hover,.message-card:hover{border-color:var(--portal-orange);transform:translateY(-3px)}
+.project-status,.state-pill{border-radius:0}
+.upload-zone{border-radius:0;border-color:rgba(247,148,29,.5);background:rgba(247,148,29,.045)}
+.upload-zone:hover{background:rgba(247,148,29,.1);border-color:var(--portal-orange)}
+.upload-icon{color:var(--portal-orange)}
+.inline-notice{border-radius:0}
+.portal-footer{background:var(--portal-ink);color:rgba(255,255,255,.68)}
+.portal-footer svg{color:var(--portal-orange)}
+.portal-public-link:hover,.subtle-link:hover{color:var(--portal-orange)}
+@media(max-width:760px){
+  .portal-brand-logo{width:148px}
+  .portal-sidebar{background:var(--portal-ink)}
+  .portal-page-heading{padding-bottom:22px}
+}
